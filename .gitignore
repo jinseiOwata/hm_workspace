@@ -1,0 +1,12 @@
+# 秘密情報
+.env
+
+# 実行時に生成される一時ファイル・ログ・状態ファイル
+__pycache__/
+*.pyc
+run.log
+last_analysis_raw.txt
+last_gemini_raw.txt
+signals_store/
+pending_orders/
+line_user_id.txt
