@@ -9,7 +9,7 @@
 
 必要な環境変数:
     ANTHROPIC_API_KEY   Anthropic の APIキー
-    BLOG_MODEL          使用モデル(省略時 claude-opus-5-5。費用を抑えるなら claude-sonnet-5)
+    BLOG_MODEL          使用モデル(省略時 claude-sonnet-5。品質重視なら claude-opus-5-5)
     BLOG_WEB_SEARCH     "0" で Web検索を無効化(省略時 有効)
 """
 
@@ -31,9 +31,10 @@ TOPICS_FILE = BASE_DIR / "topics.txt"
 CONFIG_FILE = BASE_DIR / "config.json"
 
 JST = timezone(timedelta(hours=9))
-MODEL = os.environ.get("BLOG_MODEL") or "claude-opus-5-5"
+MODEL = os.environ.get("BLOG_MODEL") or "claude-sonnet-5"
 USE_WEB_SEARCH = os.environ.get("BLOG_WEB_SEARCH", "1") != "0"
 TOPIC_REFILL_COUNT = 20
+LONG_ARTICLE_WARN_CHARS = 11000  # Markdown記号込みの文字数。超えたら警告ログ(記事自体は公開する)
 MAX_CONTINUATIONS = 5  # Web検索で pause_turn になった場合の再開上限
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
@@ -53,7 +54,7 @@ def _call_claude(system: str, user: str, *, web_search: bool, max_tokens: int = 
     """Claude を呼び出してテキスト部分を連結して返す。拒否時は例外。"""
     messages: list[dict] = [{"role": "user", "content": user}]
     tools = (
-        [{"type": "web_search_20260209", "name": "web_search", "max_uses": 5}]
+        [{"type": "web_search_20260209", "name": "web_search", "max_uses": 3}]
         if web_search
         else anthropic.NOT_GIVEN
     )
@@ -171,7 +172,13 @@ ARTICLE_SYSTEM = """あなたは生成AI・業務効率化に詳しい日本語�
 - 誇張・断定的な効果保証(「必ず稼げる」「100%」など)をしない
 - 個人情報や機密情報をAIに入力する際の注意など、読者のリスクになる点は必ず触れる
 - 見出しは Markdown の ## と ### を使う(# は使わない)
-- 本文は3000〜5000字程度。冒頭に「この記事でわかること」を箇条書きで、最後に「まとめ」を置く
+- 冒頭に「この記事でわかること」を箇条書きで、最後に「まとめ」を置く
+
+分量(厳守):
+- 本文は全角6,000〜8,000字、どんなに長くても9,000字以内に収める。
+  スマホで最後まで読み切れる長さにするためと、生成コストを抑えるため。
+- ## 見出しは6〜8個まで。網羅的な解説よりも、読者がすぐ試せる手順・プロンプト例・注意点を優先し、
+  それ以外は思い切って削る。プロンプト例やテンプレートは代表的なものを3〜5個に絞る
 """
 
 
@@ -235,7 +242,9 @@ def main() -> int:
         n += 1
     path.write_text(dump_post(meta, body), encoding="utf-8")
     save_topics(topics[1:])
-    logger.info("記事を保存しました: %s (%s)", path.name, meta["title"])
+    logger.info("記事を保存しました: %s (%s, 本文%d字)", path.name, meta["title"], len(body.strip()))
+    if len(body.strip()) > LONG_ARTICLE_WARN_CHARS:
+        logger.warning("本文が目安より長くなっています(%d字)。プロンプトの分量指示を見直してください", len(body.strip()))
     return 0
 
 
