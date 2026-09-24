@@ -9,7 +9,7 @@
 
 必要な環境変数:
     ANTHROPIC_API_KEY   Anthropic の APIキー
-    BLOG_MODEL          使用モデル(省略時 claude-opus-5)
+    BLOG_MODEL          使用モデル(省略時 claude-opus-5-5。費用を抑えるなら claude-sonnet-5)
     BLOG_WEB_SEARCH     "0" で Web検索を無効化(省略時 有効)
 """
 
@@ -31,7 +31,7 @@ TOPICS_FILE = BASE_DIR / "topics.txt"
 CONFIG_FILE = BASE_DIR / "config.json"
 
 JST = timezone(timedelta(hours=9))
-MODEL = os.environ.get("BLOG_MODEL") or "claude-opus-5"
+MODEL = os.environ.get("BLOG_MODEL") or "claude-opus-5-5"
 USE_WEB_SEARCH = os.environ.get("BLOG_WEB_SEARCH", "1") != "0"
 TOPIC_REFILL_COUNT = 20
 MAX_CONTINUATIONS = 5  # Web検索で pause_turn になった場合の再開上限
@@ -40,6 +40,13 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(me
 logger = logging.getLogger(__name__)
 
 client = anthropic.Anthropic()
+
+
+def _fallback_kwargs() -> dict:
+    """Opus / Fable は拒否時に別モデルで自動再実行するサーバー側フォールバックを使う。"""
+    if MODEL.startswith(("claude-opus-5", "claude-fable-5")):
+        return {"betas": ["server-side-fallback-2026-07-01"], "fallbacks": "default"}
+    return {}
 
 
 def _call_claude(system: str, user: str, *, web_search: bool, max_tokens: int = 32000) -> str:
@@ -60,8 +67,7 @@ def _call_claude(system: str, user: str, *, web_search: bool, max_tokens: int = 
             tools=tools,
             thinking={"type": "adaptive"},
             output_config={"effort": "high"},
-            betas=["server-side-fallback-2026-07-01"],
-            fallbacks="default",
+            **_fallback_kwargs(),
         ) as stream:
             response = stream.get_final_message()
 
