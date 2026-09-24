@@ -1,0 +1,71 @@
+name: auto-blog
+
+on:
+  schedule:
+    - cron: "17 21 * * *"   # 毎日 06:17 JST に1記事生成
+  workflow_dispatch:
+    inputs:
+      force:
+        description: "本日分が既にあっても追加生成する"
+        type: boolean
+        default: false
+  push:
+    branches: [main]
+    paths: ["auto_blog/**", ".github/workflows/auto-blog.yml"]
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: auto-blog
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: auto_blog
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+
+      - name: Generate article
+        if: github.event_name != 'push'
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          BLOG_MODEL: ${{ vars.BLOG_MODEL }}
+          BLOG_FORCE: ${{ inputs.force && '1' || '0' }}
+        run: |
+          python generate_article.py
+          git config user.name "auto-blog-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add posts topics.txt
+          git diff --cached --quiet || (git commit -m "auto-blog: add article $(date +%F)" && git push)
+
+      - id: pages
+        uses: actions/configure-pages@v5
+
+      - name: Build site
+        env:
+          SITE_BASE_URL: ${{ steps.pages.outputs.base_url }}
+        run: python build_site.py
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: auto_blog/_site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
