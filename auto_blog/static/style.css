@@ -1,0 +1,33 @@
+:root {
+  --bg: #fbfaf7; --fg: #1f2328; --muted: #5f6670; --accent: #0b6e4f; --card: #ffffff; --line: #e4e2dc; --code: #f2f0ea;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #15171a; --fg: #e8e6e1; --muted: #a0a4ab; --accent: #4fc39a; --card: #1d2024; --line: #30343a; --code: #23272c; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font-family: "Hiragino Sans", "Noto Sans JP", system-ui, sans-serif; line-height: 1.85; overflow-wrap: anywhere; }
+.wrap { max-width: 760px; margin: 0 auto; padding: 0 16px; }
+a { color: var(--accent); }
+.site-header { border-bottom: 1px solid var(--line); padding: 18px 0; }
+.brand { font-weight: 700; font-size: 1.3rem; text-decoration: none; color: var(--fg); margin-right: 12px; }
+.tagline { color: var(--muted); font-size: .9rem; }
+.intro { color: var(--muted); margin: 24px 0; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px 20px; margin: 16px 0; }
+.card h2 { font-size: 1.15rem; margin: 0 0 4px; line-height: 1.5; }
+.card a { text-decoration: none; }
+.meta { color: var(--muted); font-size: .85rem; margin: 0; }
+.tag { margin-right: 6px; }
+.post h1 { font-size: 1.6rem; line-height: 1.45; margin: 12px 0 8px; }
+.post h2 { font-size: 1.3rem; margin-top: 2.2em; padding-bottom: 4px; border-bottom: 2px solid var(--line); }
+.post h3 { font-size: 1.1rem; margin-top: 1.6em; }
+pre { background: var(--code); padding: 14px; border-radius: 8px; overflow-x: auto; white-space: pre-wrap; word-break: break-word; }
+code { background: var(--code); padding: 1px 4px; border-radius: 4px; font-size: .92em; }
+pre code { padding: 0; background: none; }
+table { border-collapse: collapse; width: 100%; display: block; overflow-x: auto; }
+th, td { border: 1px solid var(--line); padding: 6px 10px; }
+.pr { font-size: .8rem; color: var(--muted); margin: 20px 0 0; }
+.ai-note { font-size: .85rem; color: var(--muted); border-top: 1px solid var(--line); padding-top: 12px; margin-top: 32px; }
+.affiliate { background: var(--card); border: 2px solid var(--accent); border-radius: 10px; padding: 8px 20px; margin: 32px 0; }
+.affiliate h2 { border: none; margin-top: .6em; font-size: 1.05rem; }
+.related ul { padding-left: 1.2em; }
+.site-footer { border-top: 1px solid var(--line); margin-top: 48px; padding: 20px 0; color: var(--muted); font-size: .85rem; }

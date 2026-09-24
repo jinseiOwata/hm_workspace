@@ -1,0 +1,24 @@
+{
+  "site_name": "AI時短ラボ",
+  "tagline": "AIツールで仕事と暮らしを時短する実践ガイド",
+  "description": "ChatGPT・Claude・Geminiなど生成AIツールを使って、仕事や日常の作業を時短する具体的な手順を毎日紹介するブログです。",
+  "author": "AI時短ラボ編集部",
+  "language": "ja",
+  "base_url": "",
+  "adsense_client_id": "",
+  "google_site_verification": "",
+  "affiliates": [
+    {
+      "keywords": ["プログラミング", "Python", "スクール"],
+      "label": "(例)オンラインプログラミングスクール",
+      "url": "",
+      "note": "A8.net 等で提携後、url に広告リンクを入れると該当記事に自動表示されます"
+    },
+    {
+      "keywords": ["本", "書籍", "入門"],
+      "label": "(例)生成AI活用のおすすめ書籍",
+      "url": "",
+      "note": "Amazonアソシエイト / もしもアフィリエイトのリンクを入れる"
+    }
+  ]
+}
