@@ -9,7 +9,7 @@
 
 必要な環境変数:
     ANTHROPIC_API_KEY   Anthropic の APIキー
-    BLOG_MODEL          使用モデル(省略時 claude-opus-5-5。費用を抑えるなら claude-sonnet-5)
+    BLOG_MODEL          使用モデル(省略時 claude-sonnet-5。品質重視なら claude-opus-5-5)
     BLOG_WEB_SEARCH     "0" で Web検索を無効化(省略時 有効)
 """
 
@@ -31,10 +31,10 @@ TOPICS_FILE = BASE_DIR / "topics.txt"
 CONFIG_FILE = BASE_DIR / "config.json"
 
 JST = timezone(timedelta(hours=9))
-MODEL = os.environ.get("BLOG_MODEL") or "claude-opus-5-5"
+MODEL = os.environ.get("BLOG_MODEL") or "claude-sonnet-5"
 USE_WEB_SEARCH = os.environ.get("BLOG_WEB_SEARCH", "1") != "0"
 TOPIC_REFILL_COUNT = 20
-LONG_ARTICLE_WARN_CHARS = 9000  # Markdown記号込みの文字数。超えたら警告ログ(記事自体は公開する)
+LONG_ARTICLE_WARN_CHARS = 11000  # Markdown記号込みの文字数。超えたら警告ログ(記事自体は公開する)
 MAX_CONTINUATIONS = 5  # Web検索で pause_turn になった場合の再開上限
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
@@ -175,10 +175,10 @@ ARTICLE_SYSTEM = """あなたは生成AI・業務効率化に詳しい日本語�
 - 冒頭に「この記事でわかること」を箇条書きで、最後に「まとめ」を置く
 
 分量(厳守):
-- 本文は全角4,000〜6,000字、どんなに長くても7,000字以内に収める。
+- 本文は全角6,000〜8,000字、どんなに長くても9,000字以内に収める。
   スマホで最後まで読み切れる長さにするためと、生成コストを抑えるため。
-- ## 見出しは5〜7個まで。網羅的な解説よりも、読者がすぐ試せる手順・プロンプト例・注意点を優先し、
-  それ以外は思い切って削る。プロンプト例やテンプレートは代表的なものを2〜4個に絞る
+- ## 見出しは6〜8個まで。網羅的な解説よりも、読者がすぐ試せる手順・プロンプト例・注意点を優先し、
+  それ以外は思い切って削る。プロンプト例やテンプレートは代表的なものを3〜5個に絞る
 """
 
 

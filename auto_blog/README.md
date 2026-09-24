@@ -42,9 +42,9 @@ AdSense 審査で必要な「運営者情報」「プライバシーポリシー
 
 ## コストと設定
 
-- モデルは既定で `claude-opus-5-5`。1記事あたり約55円、月1,300〜2,500円程度が目安です
+- モデルは既定で `claude-sonnet-5`、本文は6,000〜8,000字。1記事あたり約35〜45円、月1,000〜1,400円程度が目安です
   (Web検索の回数や記事の長さで変動するので、Anthropic Console の Usage で実額を確認してください)
-- 費用を抑えたい場合: Settings → Secrets and variables → Actions → **Variables** に `BLOG_MODEL` = `claude-sonnet-5` を追加(月800〜1,200円程度)
+- 品質を上げたい場合: Settings → Secrets and variables → Actions → **Variables** に `BLOG_MODEL` = `claude-opus-5-5` を追加(費用はおよそ2倍)
 - 投稿時刻は workflow の `cron`(UTC 表記)で変更できます
 
 ## 手元での動作確認
