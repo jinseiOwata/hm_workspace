@@ -87,6 +87,65 @@ def parse_feed(xml_bytes: bytes) -> list[dict]:
     return videos
 
 
+def _oembed(video_id: str) -> dict:
+    """APIキー不要の oEmbed でタイトルとサムネイルを取る(RSS が使えないときの代替)。"""
+    try:
+        data = json.loads(_get(f"https://www.youtube.com/oembed?format=json&url=https://www.youtube.com/shorts/{video_id}"))
+        return {"title": data.get("title", ""), "thumbnail": data.get("thumbnail_url", "")}
+    except Exception as e:
+        logger.warning("oEmbed で動画情報を取得できませんでした(%s): %s", video_id, e)
+        return {"title": "", "thumbnail": ""}
+
+
+def scrape_video_ids(channel_id: str) -> list[str]:
+    """チャンネルのショート・動画タブの HTML から動画IDを新しい順に取り出す。"""
+    ids: list[str] = []
+    for tab in ("shorts", "videos"):
+        try:
+            html = _get(f"https://www.youtube.com/channel/{channel_id}/{tab}").decode("utf-8", errors="replace")
+        except Exception as e:
+            logger.warning("チャンネルの %s タブを取得できませんでした: %s", tab, e)
+            continue
+        for vid in re.findall(r'"videoId":"([\w-]{11})"', html):
+            if vid not in ids:
+                ids.append(vid)
+    return ids[:30]
+
+
+def fetch_videos(channel_id: str, log: dict) -> list[dict]:
+    """新着動画の一覧を取る。RSS(チャンネル → アップロード再生リスト)が 404 などで使えないときは、
+    チャンネルページから動画IDを取り出し、未記録の動画だけ oEmbed でタイトルを補う。"""
+    feeds = [
+        f"https://www.youtube.com/feeds/videos.xml?channel_id={channel_id}",
+        f"https://www.youtube.com/feeds/videos.xml?playlist_id=UU{channel_id[2:]}",
+    ]
+    for url in feeds:
+        try:
+            videos = parse_feed(_get(url))
+            logger.info("RSS から %d 本の動画を取得しました: %s", len(videos), url)
+            return videos
+        except Exception as e:
+            logger.warning("RSS を取得できませんでした(%s): %s", url, e)
+
+    ids = scrape_video_ids(channel_id)
+    if not ids:
+        raise RuntimeError(f"動画一覧を取得できませんでした(チャンネルID: {channel_id})。ID が正しいか確認してください")
+    logger.info("チャンネルページから %d 本の動画IDを取得しました", len(ids))
+    videos = []
+    for vid in ids:
+        info = _oembed(vid) if (vid not in log and log.get("_initialized")) else {"title": "", "thumbnail": ""}
+        videos.append(
+            {
+                "id": vid,
+                "title": info["title"],
+                "published": "",
+                "description": "",
+                "thumbnail": info["thumbnail"] or f"https://i.ytimg.com/vi/{vid}/hqdefault.jpg",
+            }
+        )
+    return list(reversed(videos))  # 古い順(published がないため取得順の逆で代用)
+
+
 class _NoRedirect(urllib.request.HTTPRedirectHandler):
     def redirect_request(self, *args, **kwargs):
         return None
@@ -123,7 +182,8 @@ def select_new_videos(videos: list[dict], log: dict) -> list[dict]:
     予約公開の動画は公開されるまで RSS に載らず、載ったときの published がアップロード日時のことも
     あるため、日付では絞り込まない(過去動画の一斉告知は初回登録で防いでいる)。"""
     new = [v for v in videos if v["id"] and v["id"] not in log]
-    new.sort(key=lambda v: v["published"])  # 古い順に告知する
+    if all(v["published"] for v in new):
+        new.sort(key=lambda v: v["published"])  # 古い順に告知する
     return new[-MAX_VIDEOS_PER_RUN:]
 
 
@@ -132,7 +192,7 @@ def write_video_texts(video: dict, channel_name: str) -> sp.SocialTexts:
 
 動画タイトル: {video['title']}
 動画の説明文:
-{video['description'][:1500]}
+{video['description'][:1500] or '(説明文なし。タイトルだけを手がかりにし、内容を推測で作らないこと)'}
 
 - bluesky: 150字以内。思わず見たくなる一言+動画で分かること・見どころを1点。ハッシュタグは付けない。URLは書かない
 - x: {sp.X_TEXT_CHARS - 20}字以内。短く興味を引く一言。末尾に関連ハッシュタグを1〜2個(#Shorts など)。URLは書かない
@@ -151,8 +211,9 @@ def main() -> int:
     log = load_log()
     # 一度調べたチャンネルIDは記録して使い回す(毎回チャンネルページを読みに行かない)
     channel_id = yt.get("channel_id") or log.get("_channel_id") or resolve_channel_id(yt)
-    log["_channel_id"] = channel_id
-    videos = parse_feed(_get(f"https://www.youtube.com/feeds/videos.xml?channel_id={channel_id}"))
+    logger.info("チャンネルID: %s", channel_id)
+    videos = fetch_videos(channel_id, log)
+    log["_channel_id"] = channel_id  # 動画一覧が取れた ID だけ記録する
     now = datetime.now(JST).isoformat(timespec="seconds")
 
     if not log.get("_initialized"):
