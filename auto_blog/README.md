@@ -72,6 +72,15 @@ AdSense 審査で必要な「運営者情報」「プライバシーポリシー
 - チャンネルを変えるときは `config.json` の `youtube.handle` を書き換え、`youtube_log.json` を削除してください
 失敗しても記事の公開には影響しません(Actions の `announce` ジョブのログで確認できます)。
 
+## アクセス数を見る
+
+GitHub Pages にはアクセス数を見る機能がないので、無料の計測サービスを使います。`config.json` に ID を入れると、全ページに計測タグが入ります。
+
+- **Google アナリティクス 4**(おすすめ): https://analytics.google.com でアカウントとプロパティを作成 →「ウェブ」のデータストリームにブログのURLを登録 →
+  表示される **測定ID(`G-` で始まる)** を `ga_measurement_id` に入れる
+- **Cloudflare Web Analytics**(Cookie を使わない簡易計測): Cloudflare の Web Analytics でサイトを追加し、表示されるトークンを `cloudflare_analytics_token` に入れる
+- 検索での表示回数・キーワードは Google Search Console で確認できる(`google_site_verification`)
+
 ## コストと設定
 
 - モデルは既定で `claude-sonnet-5`、本文は6,000〜8,000字。1記事あたり約35〜45円、月1,000〜1,400円程度が目安です

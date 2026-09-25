@@ -49,6 +49,19 @@ class Site:
     def page(self, *, title: str, description: str, body: str, path: str, og_type: str = "website") -> str:
         c = self.c
         full_title = title if title == c["site_name"] else f"{title} | {c['site_name']}"
+        analytics = ""
+        if c.get("ga_measurement_id"):  # Google Analytics 4(アクセス数の計測)
+            gid = esc(c["ga_measurement_id"])
+            analytics += (
+                f'<script async src="https://www.googletagmanager.com/gtag/js?id={gid}"></script>\n'
+                "<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}"
+                f"gtag('js',new Date());gtag('config','{gid}');</script>"
+            )
+        if c.get("cloudflare_analytics_token"):  # Cloudflare Web Analytics(Cookie を使わない計測)
+            analytics += (
+                '<script defer src="https://static.cloudflareinsights.com/beacon.min.js" '
+                f"data-cf-beacon='{{\"token\": \"{esc(c['cloudflare_analytics_token'])}\"}}'></script>"
+            )
         adsense = (
             f'<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={esc(c["adsense_client_id"])}" crossorigin="anonymous"></script>'
             if c.get("adsense_client_id")
@@ -81,6 +94,7 @@ class Site:
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700;800&family=JetBrains+Mono:wght@400;600&family=Noto+Sans+JP:wght@400;500;700;900&display=swap">
 <link rel="stylesheet" href="{self.url('style.css')}">
 {adsense}
+{analytics}
 </head>
 <body>
 <div class="bg-grid" aria-hidden="true"></div>
@@ -327,7 +341,7 @@ def build() -> None:
 <h2>広告について</h2>
 <p>当サイトは第三者配信の広告サービス(Google AdSense 等)およびアフィリエイトプログラムを利用する場合があります。広告配信事業者は、ユーザーの興味に応じた広告を表示するために Cookie を使用することがあります。Cookie を無効にする方法や Google AdSense に関する詳細は「<a href="https://policies.google.com/technologies/ads?hl=ja" rel="nofollow noopener">広告 – ポリシーと規約 – Google</a>」をご確認ください。</p>
 <h2>アクセス解析について</h2>
-<p>当サイトはアクセス解析ツールを利用する場合があります。これらはトラフィックデータ収集のために Cookie を使用しますが、個人を特定するものではありません。</p>
+<p>当サイトはアクセス解析ツール{"(Google アナリティクス)" if config.get("ga_measurement_id") else ""}を利用する場合があります。これらはトラフィックデータ収集のために Cookie を使用しますが、個人を特定するものではありません。{'Google アナリティクスによるデータの収集・処理の仕組みは「<a href="https://policies.google.com/technologies/partner-sites?hl=ja" rel="nofollow noopener">Google のサービスを使用するサイトやアプリから収集した情報の Google による使用</a>」をご確認ください。' if config.get("ga_measurement_id") else ""}</p>
 <h2>免責事項</h2>
 <p>当サイトの情報は正確性に努めていますが、生成AIを活用して作成しているため誤りを含む可能性があります。掲載情報の利用により生じた損害について、当サイトは責任を負いかねます。各サービスの最新情報は公式サイトをご確認ください。</p>
 <h2>著作権</h2>
