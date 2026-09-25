@@ -14,6 +14,8 @@ GitHub Actions が毎朝 Claude API で記事を1本書き、GitHub Pages に自
 
 テーマ(`topics.txt`)を使い切ると、Claude が既存記事と重複しない新テーマを20件ずつ自動補充します。
 
+現在の仕様(構成・設定値・費用・未対応事項)の詳細は [`SPECIFICATION.md`](SPECIFICATION.md) を参照してください。
+
 ## 立ち上げ手順(初回だけ・約10分)
 
 1. **このブランチを `main` にマージする**(スケジュール実行はデフォルトブランチでしか動きません)
@@ -39,6 +41,24 @@ GitHub Actions が毎朝 Claude API で記事を1本書き、GitHub Pages に自
 
 AdSense 審査で必要な「運営者情報」「プライバシーポリシー」ページ、ステマ規制(2023年10月施行)対応の
 「プロモーションを含みます」表記、アフィリエイトリンクの `rel="sponsored"` は自動で付きます。
+
+## SNS での告知(公開後に自動)
+
+記事が公開されると `social_post.py` が動き、Claude が紹介文を書いて次の2つを行います。
+
+- **Bluesky に自動投稿**(無料)
+  1. Bluesky でアカウントを作る
+  2. 設定 → プライバシーとセキュリティ → **アプリパスワード** → 追加(ログイン用のパスワードではなく、ここで作ったものを使う)
+  3. GitHub の Settings → Secrets and variables → Actions に次の2つを登録
+     - `BLUESKY_HANDLE`: ハンドル(例: `example.bsky.social`)
+     - `BLUESKY_APP_PASSWORD`: 手順2で作ったアプリパスワード
+  - 未登録の間は Bluesky への投稿だけスキップされます
+- **X 用の下書きを GitHub Issue で届ける**(無料。X API は有料のため投稿は手動)
+  - Issue の「X で投稿する」をタップすると、紹介文と記事リンクが入った X の投稿画面が開くので、確認して投稿するだけです
+  - Issue が作られると GitHub から通知が届きます(GitHub アプリの通知を ON にしておくとスマホで受け取れます)
+
+告知済みの記事は `social_log.json` に記録され、二重に告知されません。
+失敗しても記事の公開には影響しません(Actions の `announce` ジョブのログで確認できます)。
 
 ## コストと設定
 

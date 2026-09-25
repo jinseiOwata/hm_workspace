@@ -17,6 +17,7 @@ permissions:
   contents: write
   pages: write
   id-token: write
+  issues: write
 
 concurrency:
   group: auto-blog
@@ -63,9 +64,42 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
+    outputs:
+      page_url: ${{ steps.deployment.outputs.page_url }}
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
+
+  # 公開後に新着記事を告知: Bluesky へ自動投稿 + X 用の下書きを Issue にする
+  announce:
+    needs: deploy
+    if: github.event_name != 'push'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: auto_blog
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main   # build ジョブが push した記事を含む最新の main を取る
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+
+      - name: Announce new articles
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          SITE_BASE_URL: ${{ needs.deploy.outputs.page_url }}
+          BLUESKY_HANDLE: ${{ secrets.BLUESKY_HANDLE }}
+          BLUESKY_APP_PASSWORD: ${{ secrets.BLUESKY_APP_PASSWORD }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python social_post.py
+          git config user.name "auto-blog-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add social_log.json 2>/dev/null || true
+          git diff --cached --quiet || (git commit -m "auto-blog: record announced articles $(date +%F)" && git pull --rebase && git push)
