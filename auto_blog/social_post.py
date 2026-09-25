@@ -93,7 +93,6 @@ def post_url(base_url: str, stem: str) -> str:
 # 紹介文の生成
 # ------------------------------------------------------------------
 def write_texts(post: dict, site_name: str) -> SocialTexts:
-    client = anthropic.Anthropic()
     prompt = f"""ブログ「{site_name}」の新着記事を SNS で紹介する文章を2つ書いてください。
 
 記事タイトル: {post['title']}
@@ -105,6 +104,12 @@ def write_texts(post: dict, site_name: str) -> SocialTexts:
 - x: {X_TEXT_CHARS - 20}字以内。要点を短く。末尾に関連ハッシュタグを1〜2個。URLは書かない
 - どちらも誇張表現(「必ず」「最強」など)や絵文字の多用は避ける
 """
+    return generate_texts(prompt)
+
+
+def generate_texts(prompt: str) -> SocialTexts:
+    """紹介文(bluesky / x)を構造化出力で生成する。記事・動画の告知で共通。"""
+    client = anthropic.Anthropic()
     response = client.messages.parse(
         model=MODEL,
         max_tokens=4000,
@@ -160,11 +165,31 @@ def build_bluesky_record(text: str, url: str, title: str, description: str, now:
     }
 
 
-def post_to_bluesky(record: dict) -> str:
+def _upload_thumb(image_url: str, access_jwt: str) -> dict:
+    """リンクカード用のサムネイル画像を Bluesky にアップロードし、blob 参照を返す。"""
+    with urllib.request.urlopen(image_url, timeout=30) as res:
+        data = res.read()
+        content_type = res.headers.get("Content-Type", "image/jpeg")
+    req = urllib.request.Request(
+        "https://bsky.social/xrpc/com.atproto.repo.uploadBlob",
+        data=data,
+        headers={"Content-Type": content_type, "Authorization": f"Bearer {access_jwt}"},
+        method="POST",
+    )
+    with urllib.request.urlopen(req, timeout=30) as res:
+        return json.loads(res.read().decode("utf-8"))["blob"]
+
+
+def post_to_bluesky(record: dict, thumb_url: str | None = None) -> str:
     session = _http_json(
         "https://bsky.social/xrpc/com.atproto.server.createSession",
         {"identifier": os.environ["BLUESKY_HANDLE"], "password": os.environ["BLUESKY_APP_PASSWORD"]},
     )
+    if thumb_url:
+        try:
+            record["embed"]["external"]["thumb"] = _upload_thumb(thumb_url, session["accessJwt"])
+        except Exception as e:  # サムネイルなしでも投稿は続ける
+            logger.warning("サムネイルのアップロードに失敗しました: %s", e)
     result = _http_json(
         "https://bsky.social/xrpc/com.atproto.repo.createRecord",
         {"repo": session["did"], "collection": "app.bsky.feed.post", "record": record},
@@ -182,15 +207,15 @@ def x_intent_url(text: str, url: str) -> str:
     return "https://x.com/intent/post?" + urllib.parse.urlencode({"text": text, "url": url})
 
 
-def build_issue_body(items: list[dict]) -> str:
-    lines = ["新着記事の X 用紹介文です。「X で投稿する」をタップすると、文章とリンクが入った投稿画面が開きます。", ""]
+def build_issue_body(items: list[dict], kind: str = "記事") -> str:
+    lines = [f"新着{kind}の X 用紹介文です。「X で投稿する」をタップすると、文章とリンクが入った投稿画面が開きます。", ""]
     for item in items:
         lines += [
             f"## {item['title']}",
             "",
             item["x_text"],
             "",
-            f"記事: {item['url']}",
+            f"{kind}: {item['url']}",
             "",
             f"👉 [X で投稿する]({item['intent']})",
             "",
