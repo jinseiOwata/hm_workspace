@@ -4,7 +4,7 @@ YouTube 新着動画の告知(GitHub Actions から3時間おきに実行され�
 処理の流れ:
     1. config.json の youtube.handle(または channel_id)からチャンネルの RSS を取得
        (YouTube の API キーは不要)
-    2. youtube_log.json にない新着動画を探す
+    2. youtube_log.json にない新着動画を探す(予約公開の動画は公開された後に RSS に現れた時点で対象になる)
        - 初回はチャンネルの既存動画をすべて「告知済み」として記録するだけで投稿しない
          (過去動画をまとめて投稿してしまわないため)
     3. Claude が紹介文を書き、Bluesky に自動投稿(サムネイル付きリンクカード)
@@ -24,7 +24,7 @@ import sys
 import urllib.error
 import urllib.request
 import xml.etree.ElementTree as ET
-from datetime import datetime, timedelta, timezone
+from datetime import datetime
 from pathlib import Path
 
 import social_post as sp
@@ -33,7 +33,6 @@ from generate_article import JST
 BASE_DIR = Path(__file__).resolve().parent
 LOG_FILE = BASE_DIR / "youtube_log.json"
 
-LOOKBACK_HOURS = 48  # これより前に公開された動画は告知しない(取りこぼし拾い用の範囲)
 MAX_VIDEOS_PER_RUN = 3
 USER_AGENT = "Mozilla/5.0 (compatible; auto-blog/1.0)"
 
@@ -119,19 +118,11 @@ def save_log(log: dict) -> None:
     LOG_FILE.write_text(json.dumps(log, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
-def select_new_videos(videos: list[dict], log: dict, now: datetime | None = None) -> list[dict]:
-    now = now or datetime.now(timezone.utc)
-    since = now - timedelta(hours=LOOKBACK_HOURS)
-    new = []
-    for v in videos:
-        if not v["id"] or v["id"] in log:
-            continue
-        try:
-            published = datetime.fromisoformat(v["published"])
-        except ValueError:
-            continue
-        if published >= since:
-            new.append(v)
+def select_new_videos(videos: list[dict], log: dict) -> list[dict]:
+    """RSS に初めて現れた動画を新着とみなす。
+    予約公開の動画は公開されるまで RSS に載らず、載ったときの published がアップロード日時のことも
+    あるため、日付では絞り込まない(過去動画の一斉告知は初回登録で防いでいる)。"""
+    new = [v for v in videos if v["id"] and v["id"] not in log]
     new.sort(key=lambda v: v["published"])  # 古い順に告知する
     return new[-MAX_VIDEOS_PER_RUN:]
 
