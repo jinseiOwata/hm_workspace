@@ -9,7 +9,7 @@
   "google_site_verification": "",
   "affiliates": [
     {
-      "name": "PLAUD NOTE(AIボイスレコーダー)",
+      "name": "PLAUD NOTE(AIボイスレコーダー)記事途中用",
       "keywords": [
         "議事録",
         "会議",
@@ -18,7 +18,21 @@
         "ボイスレコーダー"
       ],
       "slots": [
-        "mid",
+        "mid"
+      ],
+      "html": "<a href=\"https://px.a8.net/svt/ejp?a8mat=4BCJJV+DJ0LMA+5J4W+5YJRM\" rel=\"nofollow\">世界初ChatGPT-4連携AIボイスレコーダー PLAUD NOTE</a>\n<img border=\"0\" width=\"1\" height=\"1\" src=\"https://www18.a8.net/0.gif?a8mat=4BCJJV+DJ0LMA+5J4W+5YJRM\" alt=\"\">",
+      "note": "A8.net テキスト広告。コードは規約上改変しないこと"
+    },
+    {
+      "name": "PLAUD NOTE(AIボイスレコーダー)記事末尾用",
+      "keywords": [
+        "議事録",
+        "会議",
+        "文字起こし",
+        "録音",
+        "ボイスレコーダー"
+      ],
+      "slots": [
         "end"
       ],
       "html": "<a href=\"https://px.a8.net/svt/ejp?a8mat=4BCJJV+DJ0LMA+5J4W+5YRHE\" rel=\"nofollow\">6ヶ月で全世界5万ユーザー＆12億円売り上げAIボイスレコーダー PLAUD NOTE</a>\n<img border=\"0\" width=\"1\" height=\"1\" src=\"https://www19.a8.net/0.gif?a8mat=4BCJJV+DJ0LMA+5J4W+5YRHE\" alt=\"\">",
@@ -47,5 +61,8 @@
       "#大人の雑学",
       "#社会の裏側"
     ]
+  },
+  "affiliate_spare_codes": {
+    "PLAUD NOTE(短いテキスト)": "<a href=\"https://px.a8.net/svt/ejp?a8mat=4BCJJV+DJ0LMA+5J4W+5YZ76\" rel=\"nofollow\">PLAUD NOTE</a>\n<img border=\"0\" width=\"1\" height=\"1\" src=\"https://www12.a8.net/0.gif?a8mat=4BCJJV+DJ0LMA+5J4W+5YZ76\" alt=\"\">"
   }
 }
