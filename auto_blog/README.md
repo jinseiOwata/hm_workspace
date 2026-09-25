@@ -14,6 +14,8 @@ GitHub Actions が毎朝 Claude API で記事を1本書き、GitHub Pages に自
 
 テーマ(`topics.txt`)を使い切ると、Claude が既存記事と重複しない新テーマを20件ずつ自動補充します。
 
+現在の仕様(構成・設定値・費用・未対応事項)の詳細は [`SPECIFICATION.md`](SPECIFICATION.md) を参照してください。
+
 ## 立ち上げ手順(初回だけ・約10分)
 
 1. **このブランチを `main` にマージする**(スケジュール実行はデフォルトブランチでしか動きません)
