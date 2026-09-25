@@ -110,17 +110,45 @@ def load_posts() -> list[dict]:
     return posts
 
 
+MID_AFFILIATE_ITEMS = 2  # 記事途中の枠に出す最大件数(読みやすさを優先して少なめ)
+
+
+def matched_affiliates(post: dict, config: dict) -> list[dict]:
+    """記事本文かタイトルにキーワードが含まれる、提携済み(url設定済み)の広告を設定順に返す。"""
+    return [
+        a
+        for a in config.get("affiliates", [])
+        if a.get("url") and any(k in post["text"] or k in post["title"] for k in a.get("keywords", []))
+    ]
+
+
+def _affiliate_links(ads: list[dict]) -> str:
+    return "".join(
+        f'<li><a href="{esc(a["url"])}" rel="sponsored nofollow noopener" target="_blank">{esc(a["label"])}</a></li>'
+        for a in ads
+    )
+
+
 def affiliate_box(post: dict, config: dict) -> str:
-    """記事本文にキーワードが含まれる提携済み(url設定済み)の広告だけを表示する。"""
-    items = []
-    for a in config.get("affiliates", []):
-        if a.get("url") and any(k in post["text"] or k in post["title"] for k in a.get("keywords", [])):
-            items.append(
-                f'<li><a href="{esc(a["url"])}" rel="sponsored nofollow noopener" target="_blank">{esc(a["label"])}</a></li>'
-            )
-    if not items:
+    """記事末尾の枠: 一致した広告をすべて表示する。"""
+    ads = matched_affiliates(post, config)
+    if not ads:
         return ""
-    return f'<aside class="affiliate"><h2>この記事に関連するおすすめ</h2><ul>{"".join(items)}</ul></aside>'
+    return f'<aside class="affiliate"><h2>この記事に関連するおすすめ</h2><ul>{_affiliate_links(ads)}</ul></aside>'
+
+
+def insert_mid_affiliate(html_body: str, post: dict, config: dict) -> str:
+    """記事途中の枠: 2つ目の ## 見出しの直前に、一致した広告を最大 MID_AFFILIATE_ITEMS 件だけ差し込む。
+    見出しが2つない短い記事には入れない(末尾の枠だけにする)。"""
+    ads = matched_affiliates(post, config)[:MID_AFFILIATE_ITEMS]
+    if not ads:
+        return html_body
+    first = html_body.find("<h2")
+    second = html_body.find("<h2", first + 1) if first != -1 else -1
+    if second == -1:
+        return html_body
+    box = f'<aside class="affiliate affiliate-mid"><p class="affiliate-label">PR</p><ul>{_affiliate_links(ads)}</ul></aside>\n'
+    return html_body[:second] + box + html_body[second:]
 
 
 def tag_slug(tag: str) -> str:
@@ -160,7 +188,7 @@ def build() -> None:
   <p class="pr">※本記事にはプロモーション(広告)が含まれる場合があります。</p>
   <h1>{esc(p['title'])}</h1>
   <p class="meta">{esc(p['date'])} · {tags}</p>
-  {p['html']}
+  {insert_mid_affiliate(p['html'], p, config)}
   {affiliate_box(p, config)}
   <p class="ai-note">この記事は生成AIを活用して作成し、公開しています。料金や仕様は変更されることがあるため、最新情報は各サービスの公式サイトをご確認ください。</p>
 </article>
