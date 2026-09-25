@@ -93,6 +93,7 @@ a:hover { text-decoration: underline; }
 }
 .card::before {
   content: ""; position: absolute; inset: -1px; border-radius: inherit; padding: 1px; opacity: 0;
+  pointer-events: none; /* 光る枠線はクリックを受け取らない(カードのリンクを押せるように) */
   background: var(--grad);
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor; mask-composite: exclude;
@@ -180,6 +181,7 @@ tr:nth-child(even) td { background: rgba(255,255,255,.02); }
 }
 .affiliate::before {
   content: ""; position: absolute; inset: -1px; border-radius: inherit; padding: 1px; background: var(--grad); z-index: -1;
+  pointer-events: none;
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude;
 }
 .affiliate h2 { border: none; background: none; padding: 0; margin: .7em 0 .3em; font-size: 1rem; color: var(--fg-strong); }
