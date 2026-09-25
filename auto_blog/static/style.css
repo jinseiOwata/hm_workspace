@@ -29,5 +29,7 @@ th, td { border: 1px solid var(--line); padding: 6px 10px; }
 .ai-note { font-size: .85rem; color: var(--muted); border-top: 1px solid var(--line); padding-top: 12px; margin-top: 32px; }
 .affiliate { background: var(--card); border: 2px solid var(--accent); border-radius: 10px; padding: 8px 20px; margin: 32px 0; }
 .affiliate h2 { border: none; margin-top: .6em; font-size: 1.05rem; }
+.affiliate-mid { margin: 24px 0; padding: 4px 16px; border-width: 1px; }
+.affiliate-label { font-size: .75rem; color: var(--muted); margin: 6px 0 0; }
 .related ul { padding-left: 1.2em; }
 .site-footer { border-top: 1px solid var(--line); margin-top: 48px; padding: 20px 0; color: var(--muted); font-size: .85rem; }

@@ -35,7 +35,7 @@ GitHub Actions が毎朝 Claude API で記事を1本書き、GitHub Pages に自
 
 | やること | 設定場所 |
 |---|---|
-| アフィリエイト(A8.net / もしもアフィリエイト / Amazonアソシエイト等)に登録し、提携した広告リンクを入れる | `config.json` の `affiliates[].url`。`keywords` のどれかを本文に含む記事の末尾に自動で表示されます |
+| アフィリエイト(A8.net / もしもアフィリエイト / Amazonアソシエイト等)に登録し、提携した広告リンクを入れる | `config.json` の `affiliates[].url`。`keywords` のどれかを本文に含む記事の途中(2つ目の見出しの前)と末尾に自動で表示されます |
 | 記事が20〜30本たまったら Google AdSense に申請 | 合格後、`config.json` の `adsense_client_id` に `ca-pub-xxxxxxxx` を入れる(自動広告タグと `ads.txt` が出力されます) |
 | サイト名・コンセプト・ジャンルを変える | `config.json` と `topics.txt`、`generate_article.py` の `ARTICLE_SYSTEM` |
 
