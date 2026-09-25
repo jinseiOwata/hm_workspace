@@ -114,19 +114,26 @@ MID_AFFILIATE_ITEMS = 2  # 記事途中の枠に出す最大件数(読みやす�
 
 
 def matched_affiliates(post: dict, config: dict) -> list[dict]:
-    """記事本文かタイトルにキーワードが含まれる、提携済み(url設定済み)の広告を設定順に返す。"""
+    """記事本文かタイトルにキーワードが含まれる、提携済み(url か html が設定済み)の広告を設定順に返す。"""
     return [
         a
         for a in config.get("affiliates", [])
-        if a.get("url") and any(k in post["text"] or k in post["title"] for k in a.get("keywords", []))
+        if (a.get("url") or a.get("html")) and any(k in post["text"] or k in post["title"] for k in a.get("keywords", []))
     ]
 
 
 def _affiliate_links(ads: list[dict]) -> str:
-    return "".join(
-        f'<li><a href="{esc(a["url"])}" rel="sponsored nofollow noopener" target="_blank">{esc(a["label"])}</a></li>'
-        for a in ads
-    )
+    """html(ASPの広告コード)があれば改変せずそのまま、なければ url と label からテキストリンクを作る。
+    ASP の広告コードは規約上改変できないため、エスケープも属性の追加もしない。"""
+    items = []
+    for a in ads:
+        if a.get("html"):
+            items.append(f'<li class="affiliate-code">{a["html"]}</li>')
+        else:
+            items.append(
+                f'<li><a href="{esc(a["url"])}" rel="sponsored nofollow noopener" target="_blank">{esc(a["label"])}</a></li>'
+            )
+    return "".join(items)
 
 
 def affiliate_box(post: dict, config: dict) -> str:
