@@ -219,7 +219,7 @@ bluesky は150字以内・ハッシュタグなし、x は90字以内+ハッシ�
 | `base_url` | 公開URL(Actions では `SITE_BASE_URL` が優先されるので空でよい) | 空 |
 | `adsense_client_id` | AdSense のパブリッシャーID(`ca-pub-…`)。入れると広告タグと ads.txt を出力 | 未設定 |
 | `google_site_verification` | Search Console の所有権確認コード | 未設定 |
-| `youtube.handle` / `youtube.channel_id` / `youtube.name` | 告知する YouTube チャンネル。`channel_id` があればハンドルより優先。`name` は紹介文用のチャンネル名(空ならサイト名) | `@user-qc6hw6lm5k` / 空 / 空 |
+| `youtube.handle` / `youtube.channel_id` / `youtube.name` | 告知する YouTube チャンネル。`channel_id` があればハンドルより優先。`name` は紹介文用のチャンネル名(空ならサイト名) | `@user-qc6hw6lm5k` / `UCWrRPO325df-U3L9tUGlDgQ` / 空 |
 | `affiliates[]` | `keywords` のどれかがタイトルか本文に含まれる記事に、`url` が設定済みのものだけ「おすすめ」枠で表示 | 例2件(url 未設定のため非表示) |
 
 ### ⑤ ワークフロー `.github/workflows/auto-blog.yml`
