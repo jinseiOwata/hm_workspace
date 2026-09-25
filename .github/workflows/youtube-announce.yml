@@ -1,0 +1,40 @@
+name: youtube-announce
+
+on:
+  schedule:
+    - cron: "23 */3 * * *"   # 3時間おき(UTC の 0,3,6,…時23分)に新着動画をチェック
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: youtube-announce
+  cancel-in-progress: false
+
+jobs:
+  announce:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: auto_blog
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+
+      - name: Announce new YouTube videos
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          BLUESKY_HANDLE: ${{ secrets.BLUESKY_HANDLE }}
+          BLUESKY_APP_PASSWORD: ${{ secrets.BLUESKY_APP_PASSWORD }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python youtube_announce.py
+          git config user.name "auto-blog-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add youtube_log.json 2>/dev/null || true
+          git diff --cached --quiet || (git commit -m "youtube-announce: record videos $(date +%F)" && git pull --rebase && git push)
