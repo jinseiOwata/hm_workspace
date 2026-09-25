@@ -187,16 +187,34 @@ def select_new_videos(videos: list[dict], log: dict) -> list[dict]:
     return new[-MAX_VIDEOS_PER_RUN:]
 
 
+def _strip_hashtags(text: str) -> str:
+    return re.sub(r"\s*#\S+", "", text).strip()
+
+
+def with_hashtags(text: str, hashtags: list[str], limit: int) -> str:
+    """本文のハッシュタグを外し、設定のハッシュタグを末尾に付ける。上限を超える分は本文を切り詰める。"""
+    tags = " ".join(hashtags)
+    body = _strip_hashtags(text)
+    room = limit - len(tags) - 1 if tags else limit
+    if len(body) > room:
+        body = body[: room - 1] + "…"
+    return f"{body} {tags}".strip()
+
+
 def write_video_texts(video: dict, channel_name: str) -> sp.SocialTexts:
-    prompt = f"""YouTube チャンネル「{channel_name}」に投稿された新しい動画を SNS で紹介する文章を2つ書いてください。
+    prompt = f"""YouTube チャンネル「{channel_name}」(社会や身近なものの「裏側」がわかる雑学ショート動画)に
+投稿された新しい動画を SNS で紹介する文章を2つ書いてください。
 
 動画タイトル: {video['title']}
 動画の説明文:
 {video['description'][:1500] or '(説明文なし。タイトルだけを手がかりにし、内容を推測で作らないこと)'}
 
-- bluesky: 150字以内。思わず見たくなる一言+動画で分かること・見どころを1点。ハッシュタグは付けない。URLは書かない
-- x: {sp.X_TEXT_CHARS - 20}字以内。短く興味を引く一言。末尾に関連ハッシュタグを1〜2個(#Shorts など)。URLは書かない
-- どちらも誇張表現(「必ず」「最強」など)や絵文字の多用は避け、説明文にない内容を作らない
+- 書き方: タイトルの内容を「〜って、なぜ?」「〜の本当の理由、知っていますか?」のような問いかけにして、
+  答えが気になって動画を見たくなる文章にする。答え(オチ)は書かない
+- bluesky: 60〜120字。問いかけ+動画でわかることを一言
+- x: 60字以内。問いかけ中心で短く
+- どちらも、ハッシュタグ・URL・チャンネル名・「新着動画公開中」のような定型句は書かない(ハッシュタグは後から自動で付ける)
+- 誇張表現(「必ず」「最強」など)や絵文字の多用は避け、説明文やタイトルにない事実を作らない
 """
     return sp.generate_texts(prompt)
 
@@ -232,7 +250,8 @@ def main() -> int:
         return 0
 
     use_bluesky = bool(os.environ.get("BLUESKY_HANDLE") and os.environ.get("BLUESKY_APP_PASSWORD"))
-    channel_name = yt.get("name") or config["site_name"]
+    channel_name = yt.get("name") or "YouTube チャンネル"
+    hashtags = yt.get("hashtags") or []
     items = []
     for v in new_videos:
         url = video_url(v["id"])
@@ -240,7 +259,8 @@ def main() -> int:
             texts = write_video_texts(v, channel_name)
         except Exception as e:
             logger.warning("紹介文の生成に失敗したため定型文を使います: %s", e)
-            texts = sp.SocialTexts(bluesky=f"新しい動画を公開しました: {v['title']}", x=f"新しい動画: {v['title']} #Shorts")
+            texts = sp.SocialTexts(bluesky=f"{_strip_hashtags(v['title'])}、その理由とは?", x=f"{_strip_hashtags(v['title'])}、その理由とは?")
+        texts.x = with_hashtags(texts.x, hashtags, sp.X_TEXT_CHARS)
 
         bluesky_status = "未設定のためスキップ"
         if use_bluesky:

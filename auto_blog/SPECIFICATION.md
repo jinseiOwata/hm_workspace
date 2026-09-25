@@ -205,9 +205,12 @@ topic: topics.txt から取り出した元テーマ
   (予約公開の動画は公開まで RSS に載らず、載ったときの公開日時がアップロード日時になっている場合があるため)
 - URL: `youtube.com/shorts/<id>` に HEAD リクエストし、200 ならショート動画としてその URL、リダイレクトされたら通常動画として `watch?v=<id>` を使う
 
-**紹介文**: `social_post.generate_texts` を共用。動画タイトルと説明文(先頭1,500字)を渡す。
-bluesky は150字以内・ハッシュタグなし、x は90字以内+ハッシュタグ1〜2個(#Shorts など)。説明文にない内容は作らせない。
-失敗時は「新しい動画を公開しました: <タイトル>」の定型文で続行。
+**紹介文**: `social_post.generate_texts` を共用。チャンネル名(`youtube.name`)、動画タイトル、説明文(先頭1,500字)を渡す。
+- 書き方: タイトルの内容を「〜って、なぜ?」のような問いかけにし、答え(オチ)は書かない
+- bluesky は60〜120字、x は60字以内。ハッシュタグ・URL・チャンネル名・「新着動画公開中」のような定型句は書かせない
+- x の文末には `youtube.hashtags`(既定 `#雑学 #大人の雑学 #社会の裏側`)をコードで付ける。モデルがハッシュタグを付けても外して付け直し、110字に収める
+- タイトルや説明文にない事実は作らせない
+- 失敗時は「<タイトル>、その理由とは?」の定型文(x は同じくハッシュタグ付き)で続行
 
 **投稿と記録**: Bluesky(サムネイル付きリンクカード)と X 用下書きの Issue(タイトル `[X投稿] YYYY-MM-DD HH:MM YouTube 新着動画 N件`)は
 記事の告知と同じ。告知した動画を `youtube_log.json` に記録する(失敗しても記録し、再試行はしない)。
@@ -220,7 +223,8 @@ bluesky は150字以内・ハッシュタグなし、x は90字以内+ハッシ�
 | `base_url` | 公開URL(Actions では `SITE_BASE_URL` が優先されるので空でよい) | 空 |
 | `adsense_client_id` | AdSense のパブリッシャーID(`ca-pub-…`)。入れると広告タグと ads.txt を出力 | 未設定 |
 | `google_site_verification` | Search Console の所有権確認コード | 未設定 |
-| `youtube.handle` / `youtube.channel_id` / `youtube.name` | 告知する YouTube チャンネル。`channel_id` があればハンドルより優先。`name` は紹介文用のチャンネル名(空ならサイト名) | `@user-qc6hw6lm5k` / `UCWrRPO325df-U3L9tUGlDgQ` / 空 |
+| `youtube.handle` / `youtube.channel_id` / `youtube.name` | 告知する YouTube チャンネル。`channel_id` があればハンドルより優先。`name` は紹介文を書かせるときに渡すチャンネル名 | `@user-qc6hw6lm5k` / `UCWrRPO325df-U3L9tUGlDgQ` / `雑学アーカイブ` |
+| `youtube.hashtags` | X 用紹介文の末尾に必ず付けるハッシュタグ | `#雑学` `#大人の雑学` `#社会の裏側` |
 | `affiliates[]` | `keywords` のどれかがタイトルか本文に含まれる記事に、`url` が設定済みのものだけ「おすすめ」枠で表示 | 例2件(url 未設定のため非表示) |
 
 ### ⑤ ワークフロー `.github/workflows/auto-blog.yml`
@@ -251,7 +255,7 @@ bluesky は150字以内・ハッシュタグなし、x は90字以内+ハッシ�
 |---|---|---|
 | Bluesky | 自動投稿(ブログ記事・YouTube 動画とも同じアカウント) | Secrets `BLUESKY_HANDLE` / `BLUESKY_APP_PASSWORD`(アプリパスワード)登録済み |
 | X | 手動投稿。GitHub Issue の「X で投稿する」リンクから投稿画面を開く | 設定不要(Issue 作成は `GITHUB_TOKEN`) |
-| YouTube | 告知元(`@user-qc6hw6lm5k`、チャンネルID `UCWrRPO325df-U3L9tUGlDgQ`) | `config.json` の `youtube` |
+| YouTube | 告知元「雑学アーカイブ」(`@user-qc6hw6lm5k`、チャンネルID `UCWrRPO325df-U3L9tUGlDgQ`) | `config.json` の `youtube` |
 
 **Bluesky のプロフィール**(2026-09-25 設定)
 - 表示名: `AI時短ラボ｜雑学ショート`
@@ -296,6 +300,7 @@ bluesky は150字以内・ハッシュタグなし、x は90字以内+ハッシ�
 | #5 | YouTube 新着動画の告知(3時間おき、Bluesky 自動投稿+X 用下書き)を追加 |
 | #6 | 新着動画の判定を「公開から48時間以内」から「RSS に初めて現れた動画」に変更(予約公開の動画を取りこぼさないため) |
 | #7 | チャンネルIDを `config.json` で明示設定。RSS が使えないときの代替取得(アップロード再生リストの RSS → チャンネルページ+oEmbed)とログを追加 |
+| #10 | 動画の紹介文を改善: チャンネル名「雑学アーカイブ」を設定し、ブログ名が入らないようにした。問いかけ型の文章、X はハッシュタグ固定 |
 
 ## 未対応・要検討事項
 
