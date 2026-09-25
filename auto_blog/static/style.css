@@ -135,26 +135,30 @@ a:hover { text-decoration: underline; }
 .toc a { color: var(--fg); }
 .toc a:hover { color: var(--cyan); }
 
-/* コードブロック(プロンプト例) */
+/* コードブロック(プロンプト例): 本文との境界がひと目でわかるよう、明るめの地色・太めの枠・見出し帯を付ける */
 pre {
-  position: relative; background: var(--code-bg); border: 1px solid var(--line); border-radius: 14px;
-  padding: 44px 16px 16px; overflow-x: auto; white-space: pre-wrap; word-break: break-word;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.03), var(--shadow);
+  position: relative; margin: 1.8em 0; padding: 56px 18px 18px;
+  background: #101a30; border: 2px solid rgba(34, 211, 238, 0.55); border-radius: 14px;
+  overflow-x: auto; white-space: pre-wrap; word-break: break-word;
+  box-shadow: 0 0 0 4px rgba(34, 211, 238, 0.08), 0 12px 32px rgba(2, 6, 23, 0.6);
 }
 pre::before {
-  content: "PROMPT"; position: absolute; top: 12px; left: 16px;
-  font-family: "Inter", sans-serif; font-weight: 700; font-size: .66rem; letter-spacing: .16em; color: var(--mint);
+  content: "PROMPT"; position: absolute; top: 0; left: 0; right: 0; height: 40px;
+  display: flex; align-items: center; padding-left: 16px;
+  font-family: "Inter", sans-serif; font-weight: 800; font-size: .72rem; letter-spacing: .18em; color: #06121f;
+  background: var(--grad); border-radius: 11px 11px 0 0;
 }
-pre::after {
-  content: ""; position: absolute; top: 34px; left: 0; right: 0; height: 1px; background: var(--line);
-}
-code { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: .88em; background: rgba(139,92,246,.16); color: #e3dcff; padding: 1px 6px; border-radius: 6px; }
-pre code { background: none; padding: 0; color: #d7e3ff; font-size: .86rem; line-height: 1.75; }
+pre::after { content: none; }
+code { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: .88em; background: rgba(139,92,246,.2); color: #ece6ff; padding: 1px 6px; border-radius: 6px; border: 1px solid rgba(139,92,246,.35); }
+pre code { display: block; background: none; border: none; padding: 0; color: #e6eeff; font-size: .9rem; line-height: 1.8; }
 .copy-btn {
-  position: absolute; top: 7px; right: 10px; font: 600 .72rem "Noto Sans JP", sans-serif; cursor: pointer;
-  color: var(--fg); background: rgba(139,92,246,.22); border: 1px solid rgba(139,92,246,.45); border-radius: 8px; padding: 3px 10px;
+  position: absolute; top: 6px; right: 10px; z-index: 1; cursor: pointer;
+  font: 700 .78rem "Noto Sans JP", sans-serif; color: #06121f;
+  background: #ffffff; border: none; border-radius: 8px; padding: 5px 12px;
+  box-shadow: 0 2px 8px rgba(2, 6, 23, 0.35);
 }
-.copy-btn:hover { background: rgba(34,211,238,.25); border-color: var(--cyan); }
+.copy-btn:hover { background: #d9fbff; }
+.copy-btn:active { transform: translateY(1px); }
 
 /* 表 */
 table { border-collapse: collapse; width: 100%; display: block; overflow-x: auto; margin: 1.4em 0; font-size: .92rem; }
