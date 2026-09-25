@@ -26,6 +26,19 @@
       "note": "A8.net テキスト広告。コードは規約上改変しないこと"
     },
     {
+      "name": "ZENCHORD1(AI議事録イヤホン)テキスト",
+      "keywords": [
+        "議事録",
+        "会議",
+        "文字起こし"
+      ],
+      "slots": [
+        "mid"
+      ],
+      "html": "<a href=\"https://px.a8.net/svt/ejp?a8mat=4BCJJV+DIF60I+5QLS+HVFKY\" rel=\"nofollow\">【ZENCHORD1】</a>\n<img border=\"0\" width=\"1\" height=\"1\" src=\"https://www10.a8.net/0.gif?a8mat=4BCJJV+DIF60I+5QLS+HVFKY\" alt=\"\">",
+      "note": "A8.net テキスト広告。コードは規約上改変しないこと"
+    },
+    {
       "name": "PLAUD NOTE(AIボイスレコーダー)記事末尾用",
       "keywords": [
         "議事録",
@@ -52,6 +65,93 @@
       ],
       "html": "<a href=\"https://px.a8.net/svt/ejp?a8mat=4BCJJV+DIF60I+5QLS+HW2Q9\" rel=\"nofollow\">\n<img border=\"0\" width=\"300\" height=\"250\" alt=\"\" src=\"https://www21.a8.net/svt/bgt?aid=260925691817&wid=001&eno=01&mid=s00000026776003005000&mc=1\"></a>\n<img border=\"0\" width=\"1\" height=\"1\" src=\"https://www17.a8.net/0.gif?a8mat=4BCJJV+DIF60I+5QLS+HW2Q9\" alt=\"\">",
       "note": "A8.net バナー(300x250)。大きいので記事末尾のみ"
+    },
+    {
+      "name": "英語添削アイディー",
+      "keywords": [
+        "英語",
+        "英文",
+        "英作文",
+        "英会話",
+        "TOEIC"
+      ],
+      "slots": [
+        "mid",
+        "end"
+      ],
+      "html": "<a href=\"https://px.a8.net/svt/ejp?a8mat=4BCJJV+DLEC1E+2KSK+5Z6WY\" rel=\"nofollow\">英語添削アイディー</a>\n<img border=\"0\" width=\"1\" height=\"1\" src=\"https://www18.a8.net/0.gif?a8mat=4BCJJV+DLEC1E+2KSK+5Z6WY\" alt=\"\">",
+      "note": "A8.net テキスト広告。コードは規約上改変しないこと"
+    },
+    {
+      "name": "Aiarty Image Enhancer(画像高画質化AI)",
+      "keywords": [
+        "画像生成",
+        "アイキャッチ",
+        "高画質",
+        "画像編集",
+        "写真"
+      ],
+      "slots": [
+        "mid",
+        "end"
+      ],
+      "html": "<a href=\"https://px.a8.net/svt/ejp?a8mat=4BCJJV+DJM182+428G+HVFKY\" rel=\"nofollow\">【Aiarty Image Enhancer】</a>\n<img border=\"0\" width=\"1\" height=\"1\" src=\"https://www11.a8.net/0.gif?a8mat=4BCJJV+DJM182+428G+HVFKY\" alt=\"\">",
+      "note": "A8.net テキスト広告。コードは規約上改変しないこと"
+    },
+    {
+      "name": "ExpressVPN",
+      "keywords": [
+        "VPN",
+        "公共Wi-Fi",
+        "フリーWi-Fi",
+        "海外旅行",
+        "海外出張"
+      ],
+      "slots": [
+        "end"
+      ],
+      "html": "<a href=\"https://px.a8.net/svt/ejp?a8mat=4BCJJV+DML78Y+5JSS+5YRHE\" rel=\"nofollow\">ExpressVPN</a>\n<img border=\"0\" width=\"1\" height=\"1\" src=\"https://www15.a8.net/0.gif?a8mat=4BCJJV+DML78Y+5JSS+5YRHE\" alt=\"\">",
+      "note": "A8.net テキスト広告。コードは規約上改変しないこと"
+    },
+    {
+      "name": "GMKtec(ミニPC)",
+      "keywords": [
+        "ミニPC",
+        "パソコン選び",
+        "PC選び",
+        "ローカルLLM"
+      ],
+      "slots": [
+        "end"
+      ],
+      "html": "<a href=\"https://px.a8.net/svt/ejp?a8mat=4BCJJV+DK7GTU+5W12+5YRHE\" rel=\"nofollow\">【GMKtec】</a>\n<img border=\"0\" width=\"1\" height=\"1\" src=\"https://www15.a8.net/0.gif?a8mat=4BCJJV+DK7GTU+5W12+5YRHE\" alt=\"\">",
+      "note": "A8.net テキスト広告。コードは規約上改変しないこと"
+    },
+    {
+      "name": "EarFun(イヤホン)",
+      "keywords": [
+        "イヤホン",
+        "ノイズキャンセリング",
+        "リスニング"
+      ],
+      "slots": [
+        "end"
+      ],
+      "html": "<a href=\"https://px.a8.net/svt/ejp?a8mat=4BCJJV+DODI2A+5REO+5YRHE\" rel=\"nofollow\">【EarFun】</a>\n\n<img border=\"0\" width=\"1\" height=\"1\" src=\"https://www11.a8.net/0.gif?a8mat=4BCJJV+DODI2A+5REO+5YRHE\" alt=\"\">",
+      "note": "A8.net テキスト広告。コードは規約上改変しないこと"
+    },
+    {
+      "name": "A8.net メディア会員募集",
+      "keywords": [
+        "アフィリエイト",
+        "ブログ運営",
+        "ブログ記事"
+      ],
+      "slots": [
+        "end"
+      ],
+      "html": "<a href=\"https://px.a8.net/svt/ejp?a8mat=2ZRKJO+1GE60I+0K+10G5NM\" rel=\"nofollow\">A8.net</a>\n<img border=\"0\" width=\"1\" height=\"1\" src=\"https://www15.a8.net/0.gif?a8mat=2ZRKJO+1GE60I+0K+10G5NM\" alt=\"\">",
+      "note": "A8.net テキスト広告。コードは規約上改変しないこと"
     }
   ],
   "youtube": {
