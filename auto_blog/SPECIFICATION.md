@@ -191,7 +191,12 @@ topic: topics.txt から取り出した元テーマ
 **チャンネルの特定**: `config.json` の `youtube.channel_id` → `youtube_log.json` の `_channel_id`(前回調べた値)→
 チャンネルページ(`youtube.com/@<handle>`)の HTML から `UC…` の ID を抽出、の順で決める。調べた ID は記録して使い回す。
 
-**新着の取得**: `https://www.youtube.com/feeds/videos.xml?channel_id=<ID>`(公開 RSS、APIキー不要、直近15本程度)
+**新着の取得**(上から順に試し、取れたものを使う。どれも APIキー不要)
+1. チャンネルの RSS: `https://www.youtube.com/feeds/videos.xml?channel_id=<ID>`(直近15本程度)
+2. アップロード再生リストの RSS: `…/feeds/videos.xml?playlist_id=UU<IDの3文字目以降>`
+3. チャンネルの「ショート」「動画」タブの HTML から動画IDを抽出(最大30件)。未記録の動画だけ oEmbed
+   (`youtube.com/oembed`)でタイトルとサムネイルを補う。説明文と公開日時は取れないため、紹介文はタイトルだけから作る
+- 実行ログに使ったチャンネルIDと取得方法を出す。動画一覧が取れたときだけチャンネルIDを記録する
 
 **告知対象**
 - 初回(`youtube_log.json` に `_initialized` がない)は、既存動画をすべて「告知なし」で記録して終了する
@@ -214,7 +219,7 @@ bluesky は150字以内・ハッシュタグなし、x は90字以内+ハッシ�
 | `base_url` | 公開URL(Actions では `SITE_BASE_URL` が優先されるので空でよい) | 空 |
 | `adsense_client_id` | AdSense のパブリッシャーID(`ca-pub-…`)。入れると広告タグと ads.txt を出力 | 未設定 |
 | `google_site_verification` | Search Console の所有権確認コード | 未設定 |
-| `youtube.handle` / `youtube.channel_id` / `youtube.name` | 告知する YouTube チャンネル。`channel_id` があればハンドルより優先。`name` は紹介文用のチャンネル名(空ならサイト名) | `@user-qc6hw6lm5k` / 空 / 空 |
+| `youtube.handle` / `youtube.channel_id` / `youtube.name` | 告知する YouTube チャンネル。`channel_id` があればハンドルより優先。`name` は紹介文用のチャンネル名(空ならサイト名) | `@user-qc6hw6lm5k` / `UCWrRPO325df-U3L9tUGlDgQ` / 空 |
 | `affiliates[]` | `keywords` のどれかがタイトルか本文に含まれる記事に、`url` が設定済みのものだけ「おすすめ」枠で表示 | 例2件(url 未設定のため非表示) |
 
 ### ⑤ ワークフロー `.github/workflows/auto-blog.yml`
