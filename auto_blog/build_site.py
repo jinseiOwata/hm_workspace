@@ -113,12 +113,15 @@ def load_posts() -> list[dict]:
 MID_AFFILIATE_ITEMS = 2  # 記事途中の枠に出す最大件数(読みやすさを優先して少なめ)
 
 
-def matched_affiliates(post: dict, config: dict) -> list[dict]:
-    """記事本文かタイトルにキーワードが含まれる、提携済み(url か html が設定済み)の広告を設定順に返す。"""
+def matched_affiliates(post: dict, config: dict, slot: str | None = None) -> list[dict]:
+    """記事本文かタイトルにキーワードが含まれる、提携済み(url か html が設定済み)の広告を設定順に返す。
+    slot("mid" / "end")を指定すると、その枠に出す設定(slots、省略時は両方)の広告だけに絞る。"""
     return [
         a
         for a in config.get("affiliates", [])
-        if (a.get("url") or a.get("html")) and any(k in post["text"] or k in post["title"] for k in a.get("keywords", []))
+        if (a.get("url") or a.get("html"))
+        and (slot is None or slot in a.get("slots", ["mid", "end"]))
+        and any(k in post["text"] or k in post["title"] for k in a.get("keywords", []))
     ]
 
 
@@ -138,7 +141,7 @@ def _affiliate_links(ads: list[dict]) -> str:
 
 def affiliate_box(post: dict, config: dict) -> str:
     """記事末尾の枠: 一致した広告をすべて表示する。"""
-    ads = matched_affiliates(post, config)
+    ads = matched_affiliates(post, config, "end")
     if not ads:
         return ""
     return f'<aside class="affiliate"><h2>この記事に関連するおすすめ</h2><ul>{_affiliate_links(ads)}</ul></aside>'
@@ -147,7 +150,7 @@ def affiliate_box(post: dict, config: dict) -> str:
 def insert_mid_affiliate(html_body: str, post: dict, config: dict) -> str:
     """記事途中の枠: 2つ目の ## 見出しの直前に、一致した広告を最大 MID_AFFILIATE_ITEMS 件だけ差し込む。
     見出しが2つない短い記事には入れない(末尾の枠だけにする)。"""
-    ads = matched_affiliates(post, config)[:MID_AFFILIATE_ITEMS]
+    ads = matched_affiliates(post, config, "mid")[:MID_AFFILIATE_ITEMS]
     if not ads:
         return html_body
     first = html_body.find("<h2")

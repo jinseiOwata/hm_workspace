@@ -150,9 +150,12 @@ topic: topics.txt から取り出した元テーマ
 サイト内リンクに付与する(`/hm_workspace/…` のようなサブパス配下でも動く)。canonical・sitemap・RSS は絶対URL。
 
 **アフィリエイト枠(1記事2か所)**
-- 対象: `config.json` の `affiliates[]` のうち `url` が設定済みで、`keywords` のどれかが記事タイトルか本文に含まれるもの(設定順)
-- 記事途中: 本文の2つ目の `<h2>` 見出しの直前に、対象の先頭2件を「PR」ラベル付きの小さい枠で表示。見出しが2つない記事には入れない
-- 記事末尾: 「この記事に関連するおすすめ」として対象をすべて表示
+- 対象: `config.json` の `affiliates[]` のうち `html` か `url` が設定済みで、`keywords` のどれかが記事タイトルか本文に含まれるもの(設定順 = 優先順)
+- 表示内容: `html`(ASP の広告コード)があれば **一切改変せずそのまま** 出す(A8.net の規約でコードの改変が禁止されているため。エスケープも属性の追加もしない)。
+  `html` がなければ `url` と `label` からテキストリンク(`rel="sponsored nofollow noopener"`)を作る
+- `slots`: その広告を出す枠(`"mid"` / `"end"`)。省略時は両方。大きいバナーは `["end"]` にする
+- 記事途中: 本文の2つ目の `<h2>` 見出しの直前に、途中枠の対象の先頭2件を「PR」ラベル付きの小さい枠で表示。見出しが2つない記事には入れない
+- 記事末尾: 「この記事に関連するおすすめ」として末尾枠の対象をすべて表示
 - 対象がない記事(提携リンク未設定の現状を含む)には、どちらの枠も表示しない
 
 **Markdown 変換**: `markdown` ライブラリ(拡張: fenced_code, tables, toc, sane_lists)
@@ -231,7 +234,7 @@ topic: topics.txt から取り出した元テーマ
 | `google_site_verification` | Search Console の所有権確認コード | 未設定 |
 | `youtube.handle` / `youtube.channel_id` / `youtube.name` | 告知する YouTube チャンネル。`channel_id` があればハンドルより優先。`name` は紹介文を書かせるときに渡すチャンネル名 | `@user-qc6hw6lm5k` / `UCWrRPO325df-U3L9tUGlDgQ` / `雑学アーカイブ` |
 | `youtube.hashtags` | X 用紹介文の末尾に必ず付けるハッシュタグ | `#雑学` `#大人の雑学` `#社会の裏側` |
-| `affiliates[]` | `keywords` のどれかがタイトルか本文に含まれる記事に、`url` が設定済みのものだけ記事途中と末尾の枠で表示 | 例2件(url 未設定のため非表示) |
+| `affiliates[]` | 広告の一覧(優先順)。項目は `name`(管理用の名前)、`keywords`、`slots`、`html`(ASP の広告コード)または `url`+`label` | 2件(下記) |
 
 ### ⑤ ワークフロー `.github/workflows/auto-blog.yml`
 
@@ -254,6 +257,19 @@ topic: topics.txt から取り出した元テーマ
 | Actions Secret(任意) | `BLUESKY_HANDLE` / `BLUESKY_APP_PASSWORD` | 設定済み(ブログと YouTube の告知で同じアカウントを使用) |
 | Actions Variable(任意) | `BLOG_MODEL` | 未設定(= Sonnet 5)。`claude-opus-5-5` にすると品質重視 |
 | Pages | Source = GitHub Actions | 設定済み |
+
+## 掲載中の広告(A8.net)
+
+| 優先 | 広告 | 種類 | 出す記事(keywords) | 枠 |
+|---|---|---|---|---|
+| 1 | PLAUD NOTE(AIボイスレコーダー、購入10〜13%) | テキスト | 議事録・会議・文字起こし・録音・ボイスレコーダー | 途中・末尾 |
+| 2 | Notta ZENCHORD1(AI議事録イヤホン、購入7%) | バナー 300×250 | 議事録・会議・文字起こし | 末尾のみ |
+
+- A8.net のサイト登録: サイト名「AI時短ラボ」、URL はブログの公開URL、カテゴリ「ソフトウェア」
+- 提携済みで今後追加する候補: アイディー(英文添削、英語系の記事)、Aiarty Image Enhancer(画像系の記事)、
+  ExpressVPN(セキュリティ・旅行系の記事)、GMKtec(ミニPC)。合う記事が公開されたらテキスト広告のコードをもらって追加する
+- 提携済みだが載せない: 株式投資の銘柄情報(投資系は表示ルールが厳しくテーマ外)、HUAWEI、ソファスタイル、RingConn、A8.net メディア会員募集。REN SIM は保留
+- PLAUD は「提携から3か月以内に記事掲載が確認できないと提携解除」の条件あり(議事録の記事に掲載済み)
 
 ## SNS アカウントと告知先
 
@@ -308,6 +324,7 @@ topic: topics.txt から取り出した元テーマ
 | #7 | チャンネルIDを `config.json` で明示設定。RSS が使えないときの代替取得(アップロード再生リストの RSS → チャンネルページ+oEmbed)とログを追加 |
 | #10 | 動画の紹介文を改善: チャンネル名「雑学アーカイブ」を設定し、ブログ名が入らないようにした。問いかけ型の文章、X はハッシュタグ固定 |
 | #11 | アフィリエイト枠を記事途中(2つ目の見出しの前、最大2件)と末尾の2か所に |
+| #12 | ASP の広告コードを改変せず掲載できるように(`html`)、広告ごとの枠指定(`slots`)。PLAUD NOTE と Notta ZENCHORD1 を掲載 |
 
 ## 未対応・要検討事項
 
