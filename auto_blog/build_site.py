@@ -76,24 +76,84 @@ class Site:
 {canonical}
 {verification}
 <link rel="alternate" type="application/rss+xml" title="{esc(c['site_name'])}" href="{self.url('feed.xml')}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700;800&family=JetBrains+Mono:wght@400;600&family=Noto+Sans+JP:wght@400;500;700;900&display=swap">
 <link rel="stylesheet" href="{self.url('style.css')}">
 {adsense}
 </head>
 <body>
-<header class="site-header"><div class="wrap">
-  <a class="brand" href="{self.url('')}">{esc(c['site_name'])}</a>
+<div class="bg-grid" aria-hidden="true"></div>
+<div class="bg-glow" aria-hidden="true"></div>
+<div class="progress" aria-hidden="true"><span id="progress-bar"></span></div>
+<header class="site-header"><div class="wrap header-inner">
+  <a class="brand" href="{self.url('')}">
+    <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><defs><linearGradient id="bm" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8b5cf6"/><stop offset=".5" stop-color="#22d3ee"/><stop offset="1" stop-color="#34d399"/></linearGradient></defs><path d="M16 2l3.2 9.3L28 14l-8.8 2.7L16 26l-3.2-9.3L4 14l8.8-2.7z" fill="url(#bm)"/><circle cx="26" cy="26" r="3" fill="url(#bm)"/><circle cx="6" cy="27" r="2" fill="url(#bm)" opacity=".7"/></svg>
+    <span class="brand-name">{esc(c['site_name'])}</span>
+  </a>
   <span class="tagline">{esc(c['tagline'])}</span>
 </div></header>
 <main class="wrap">
 {body}
 </main>
 <footer class="site-footer"><div class="wrap">
+  <p class="footer-brand"><span class="brand-name">{esc(c['site_name'])}</span> — {esc(c['tagline'])}</p>
   <nav><a href="{self.url('about.html')}">運営者情報</a> · <a href="{self.url('privacy.html')}">プライバシーポリシー・免責事項</a> · <a href="{self.url('feed.xml')}">RSS</a></nav>
-  <p>&copy; {year} {esc(c['site_name'])}</p>
+  <p class="copy">&copy; {year} {esc(c['site_name'])}</p>
 </div></footer>
+<script>
+(function () {{
+  var bar = document.getElementById("progress-bar");
+  function onScroll() {{
+    var h = document.documentElement;
+    var max = h.scrollHeight - h.clientHeight;
+    bar.style.width = (max > 0 ? (h.scrollTop / max) * 100 : 0) + "%";
+  }}
+  document.addEventListener("scroll", onScroll, {{ passive: true }});
+  onScroll();
+  document.querySelectorAll(".post pre").forEach(function (pre) {{
+    var btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "copy-btn";
+    btn.textContent = "コピー";
+    btn.addEventListener("click", function () {{
+      var code = pre.querySelector("code") || pre;
+      navigator.clipboard.writeText(code.innerText).then(function () {{
+        btn.textContent = "コピーしました";
+        setTimeout(function () {{ btn.textContent = "コピー"; }}, 1600);
+      }});
+    }});
+    pre.appendChild(btn);
+  }});
+}})();
+</script>
 </body>
 </html>
 """
+
+
+READ_CHARS_PER_MIN = 500  # 日本語の読了時間の目安(1分あたりの文字数)
+NEW_BADGE_DAYS = 2
+
+
+def _flatten_toc(tokens: list[dict]) -> list[dict]:
+    out = []
+    for t in tokens:
+        out.append(t)
+        out.extend(_flatten_toc(t.get("children", [])))
+    return out
+
+
+def insert_toc(html_body: str, toc: list[tuple[str, str]]) -> str:
+    """最初の ## 見出しの直前に目次を入れる(見出しが3つ未満の短い記事には入れない)。"""
+    if len(toc) < 3:
+        return html_body
+    first = html_body.find("<h2")
+    if first == -1:
+        return html_body
+    items = "".join(f'<li><a href="#{esc(i)}">{esc(name)}</a></li>' for i, name in toc)
+    box = f'<nav class="toc" aria-label="目次"><p class="toc-title">この記事の目次</p><ol>{items}</ol></nav>\n'
+    return html_body[:first] + box + html_body[first:]
 
 
 def load_posts() -> list[dict]:
@@ -104,8 +164,11 @@ def load_posts() -> list[dict]:
             continue
         meta["file"] = path.stem + ".html"
         meta["tags_list"] = [t.strip() for t in meta.get("tags", "").split(",") if t.strip()]
-        meta["html"] = markdown.markdown(body, extensions=["fenced_code", "tables", "toc", "sane_lists"])
+        md = markdown.Markdown(extensions=["fenced_code", "tables", "toc", "sane_lists"])
+        meta["html"] = md.convert(body)
+        meta["toc"] = [(t["id"], html.unescape(t["name"])) for t in _flatten_toc(md.toc_tokens) if t["level"] == 2]
         meta["text"] = body
+        meta["minutes"] = max(1, round(len(body) / READ_CHARS_PER_MIN))
         posts.append(meta)
     return posts
 
@@ -165,11 +228,23 @@ def tag_slug(tag: str) -> str:
     return "tag-" + "".join(f"{ord(ch):x}" if not ch.isascii() or not ch.isalnum() else ch.lower() for ch in tag)
 
 
+def is_new(p: dict) -> bool:
+    try:
+        return (datetime.now().date() - datetime.strptime(p["date"], "%Y-%m-%d").date()).days <= NEW_BADGE_DAYS
+    except ValueError:
+        return False
+
+
 def post_card(site: Site, p: dict) -> str:
+    badge = '<span class="badge">NEW</span>' if is_new(p) else ""
+    chips = "".join(f'<span class="chip">#{esc(t)}</span>' for t in p["tags_list"][:3])
     return f"""<article class="card">
-  <a href="{site.url(p['file'])}"><h2>{esc(p['title'])}</h2></a>
-  <p class="meta">{esc(p['date'])}</p>
-  <p>{esc(p.get('description', ''))}</p>
+  <a class="card-link" href="{site.url(p['file'])}">
+    <p class="meta">{badge}<span>{esc(p['date'])}</span><span>約{p['minutes']}分で読めます</span></p>
+    <h2>{esc(p['title'])}</h2>
+    <p class="card-desc">{esc(p.get('description', ''))}</p>
+    <p class="chips">{chips}</p>
+  </a>
 </article>"""
 
 
@@ -188,19 +263,25 @@ def build() -> None:
         tags = " ".join(f'<a class="tag" href="{site.url(tag_slug(t) + ".html")}">#{esc(t)}</a>' for t in p["tags_list"])
         related = [q for q in posts if q is not p and set(q["tags_list"]) & set(p["tags_list"])][:5]
         related_html = (
-            "<section class=\"related\"><h2>関連記事</h2><ul>"
+            "<section class=\"related\"><h2 class=\"section-title\">関連記事</h2><ul>"
             + "".join(f'<li><a href="{site.url(q["file"])}">{esc(q["title"])}</a></li>' for q in related)
             + "</ul></section>"
             if related
             else ""
         )
         body = f"""<article class="post">
-  <p class="pr">※本記事にはプロモーション(広告)が含まれる場合があります。</p>
-  <h1>{esc(p['title'])}</h1>
-  <p class="meta">{esc(p['date'])} · {tags}</p>
-  {insert_mid_affiliate(p['html'], p, config)}
+  <header class="post-hero">
+    <p class="pr">※本記事にはプロモーション(広告)が含まれる場合があります。</p>
+    <p class="eyebrow"><span class="ai-dot"></span>AI PRACTICAL GUIDE</p>
+    <h1>{esc(p['title'])}</h1>
+    <p class="meta"><span>{esc(p['date'])}</span><span>約{p['minutes']}分で読めます</span></p>
+    <p class="tags">{tags}</p>
+  </header>
+  <div class="post-body">
+  {insert_toc(insert_mid_affiliate(p['html'], p, config), p['toc'])}
   {affiliate_box(p, config)}
   <p class="ai-note">この記事は生成AIを活用して作成し、公開しています。料金や仕様は変更されることがあるため、最新情報は各サービスの公式サイトをご確認ください。</p>
+  </div>
 </article>
 {related_html}"""
         (OUT_DIR / p["file"]).write_text(
@@ -210,9 +291,18 @@ def build() -> None:
 
     # トップページ
     cards = "\n".join(post_card(site, p) for p in posts) or "<p>記事を準備中です。</p>"
-    intro = f'<section class="intro"><p>{esc(config["description"])}</p></section>'
+    intro = f"""<section class="hero">
+  <p class="eyebrow"><span class="ai-dot"></span>DAILY AI GUIDE</p>
+  <h1 class="hero-title"><span class="grad">AIで、仕事と暮らしを</span><br>もっと速く。</h1>
+  <p class="hero-lead">{esc(config["description"])}</p>
+  <ul class="hero-chips">
+    <li>毎朝更新</li><li>コピペで使えるプロンプト</li><li>公開記事 {len(posts)}本</li>
+  </ul>
+</section>
+<h2 class="section-title">最新の記事</h2>
+<div class="card-grid">"""
     (OUT_DIR / "index.html").write_text(
-        site.page(title=config["site_name"], description=config["description"], body=intro + cards, path=""),
+        site.page(title=config["site_name"], description=config["description"], body=intro + cards + "</div>", path=""),
         encoding="utf-8",
     )
 
@@ -222,7 +312,7 @@ def build() -> None:
         for t in p["tags_list"]:
             tags.setdefault(t, []).append(p)
     for t, tp in tags.items():
-        body = f"<h1>#{esc(t)} の記事</h1>" + "\n".join(post_card(site, p) for p in tp)
+        body = f'<h1 class="page-title"><span class="grad">#{esc(t)}</span> の記事</h1><div class="card-grid">' + "\n".join(post_card(site, p) for p in tp) + "</div>"
         (OUT_DIR / f"{tag_slug(t)}.html").write_text(
             site.page(title=f"#{t} の記事一覧", description=f"{t}に関する記事一覧", body=body, path=f"{tag_slug(t)}.html"),
             encoding="utf-8",
