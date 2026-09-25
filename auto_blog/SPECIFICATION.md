@@ -241,7 +241,7 @@ topic: topics.txt から取り出した元テーマ
 |---|---|---|
 | `site_name` / `tagline` / `description` / `author` | サイト名・キャッチコピー・説明・運営者名 | AI時短ラボ ほか |
 | `base_url` | 公開URL(Actions では `SITE_BASE_URL` が優先されるので空でよい) | 空 |
-| `ga_measurement_id` / `cloudflare_analytics_token` | アクセス数の計測(「アクセス数の計測」参照)。空なら計測タグを出さない | 空 / 空 |
+| `ga_measurement_id` / `cloudflare_analytics_token` | アクセス数の計測(「アクセス数の計測」参照)。空なら計測タグを出さない | `G-0WT4J2X12J` / 空 |
 | `adsense_client_id` | AdSense のパブリッシャーID(`ca-pub-…`)。入れると広告タグと ads.txt を出力 | 未設定 |
 | `google_site_verification` | Search Console の所有権確認コード | 未設定 |
 | `youtube.handle` / `youtube.channel_id` / `youtube.name` | 告知する YouTube チャンネル。`channel_id` があればハンドルより優先。`name` は紹介文を書かせるときに渡すチャンネル名 | `@user-qc6hw6lm5k` / `UCWrRPO325df-U3L9tUGlDgQ` / `雑学アーカイブ` |
@@ -276,7 +276,7 @@ GitHub Pages 自体にはアクセス数を見る機能がないため、外部�
 
 | サービス | 設定(`config.json`) | 見られるもの | 状態 |
 |---|---|---|---|
-| Google アナリティクス 4 | `ga_measurement_id`(`G-` で始まる測定ID) | ページビュー、訪問者数、流入元、よく読まれた記事、リアルタイム | 未設定 |
+| Google アナリティクス 4 | `ga_measurement_id`(`G-` で始まる測定ID) | ページビュー、訪問者数、流入元、よく読まれた記事、リアルタイム | 設定済み(プロパティ「AI時短ラボ」、`G-0WT4J2X12J`) |
 | Cloudflare Web Analytics | `cloudflare_analytics_token` | ページビュー、訪問者数、流入元(Cookie を使わない簡易計測) | 未設定 |
 | Google Search Console(タグ不要) | `google_site_verification` | 検索での表示回数・クリック数・検索キーワード | 未設定 |
 
@@ -333,7 +333,7 @@ GitHub Pages 自体にはアクセス数を見る機能がないため、外部�
 - 分量指示と Sonnet 5 への切り替え(PR #3)は、次回(2026-09-26 06:17 JST)の生成から適用される
 - ブログ記事の SNS 告知(PR #4)も次回から動く。1本目の記事も直近3日以内のため、次回に2本目と一緒に告知される
 - 新デザイン(PR #13、#14)で公開中。議事録の記事に PLAUD NOTE と Notta ZENCHORD1 の広告が表示されている(PR #12)
-- アクセス数の計測は未設定(計測タグを出す仕組みは PR #15 で追加)
+- アクセス数は Google アナリティクス 4 で計測(PR #16 で測定IDを設定)
 
 **YouTube 告知**
 - 2026-09-25 11:55 JST の手動実行で初回登録済み。公開済みの動画15本を「告知なし」で `youtube_log.json` に記録
@@ -360,13 +360,13 @@ GitHub Pages 自体にはアクセス数を見る機能がないため、外部�
 | #13 | サイトのデザインを刷新(ダーク×グラデーション、ヒーロー、カードグリッド、目次、読了時間、プロンプトのコピーボタン、読み進みバー)。プロンプト枠の境界を強調 |
 | #14 | トップページの記事カードを押しても記事に移動できない不具合を修正(光る枠線の疑似要素がクリックを横取りしていた) |
 | #15 | アクセス数の計測(Google アナリティクス 4 / Cloudflare Web Analytics)に対応。仕様書を現在の状態に更新 |
+| #16 | Google アナリティクス 4 の測定ID(`G-0WT4J2X12J`)を設定し、計測を開始 |
 
 ## 未対応・要検討事項
 
 - **独自ドメイン**: `github.io` のサブパスでは AdSense の審査・`ads.txt` 設置が事実上できないため、独自ドメインの取得と Pages への設定が必要
 - **AdSense 申請**: 記事が20〜30本たまってから(独自ドメイン設定後)
 - **アフィリエイトの追加**: アイディー・Aiarty・ExpressVPN・GMKtec のテキスト広告コードを取得して追加する(自宅PCの Claude + Chrome 拡張で取得予定)
-- **アクセス数の計測**: Google アナリティクス 4 の測定ID(または Cloudflare Web Analytics のトークン)を取得して `config.json` に設定する
 - **Search Console 登録**: 公開URLを登録し `sitemap.xml` を送信する
 - **分量の実績確認**: Sonnet 5 が6,000〜8,000字の指示を守るか、次回以降の記事で確認する
 - **APIキーの有効期限**: キー作成時に有効期限を設定した場合、期限前に作り直して Secret を更新する必要がある
