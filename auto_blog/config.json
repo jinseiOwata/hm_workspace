@@ -9,24 +9,47 @@
   "google_site_verification": "",
   "affiliates": [
     {
+      "name": "PLAUD NOTE(AIボイスレコーダー)記事途中用",
       "keywords": [
-        "プログラミング",
-        "Python",
-        "スクール"
+        "議事録",
+        "会議",
+        "文字起こし",
+        "録音",
+        "ボイスレコーダー"
       ],
-      "label": "(例)オンラインプログラミングスクール",
-      "url": "",
-      "note": "A8.net 等で提携後、url に広告リンクを入れると該当記事に自動表示されます"
+      "slots": [
+        "mid"
+      ],
+      "html": "<a href=\"https://px.a8.net/svt/ejp?a8mat=4BCJJV+DJ0LMA+5J4W+5YJRM\" rel=\"nofollow\">世界初ChatGPT-4連携AIボイスレコーダー PLAUD NOTE</a>\n<img border=\"0\" width=\"1\" height=\"1\" src=\"https://www18.a8.net/0.gif?a8mat=4BCJJV+DJ0LMA+5J4W+5YJRM\" alt=\"\">",
+      "note": "A8.net テキスト広告。コードは規約上改変しないこと"
     },
     {
+      "name": "PLAUD NOTE(AIボイスレコーダー)記事末尾用",
       "keywords": [
-        "本",
-        "書籍",
-        "入門"
+        "議事録",
+        "会議",
+        "文字起こし",
+        "録音",
+        "ボイスレコーダー"
       ],
-      "label": "(例)生成AI活用のおすすめ書籍",
-      "url": "",
-      "note": "Amazonアソシエイト / もしもアフィリエイトのリンクを入れる"
+      "slots": [
+        "end"
+      ],
+      "html": "<a href=\"https://px.a8.net/svt/ejp?a8mat=4BCJJV+DJ0LMA+5J4W+5YRHE\" rel=\"nofollow\">6ヶ月で全世界5万ユーザー＆12億円売り上げAIボイスレコーダー PLAUD NOTE</a>\n<img border=\"0\" width=\"1\" height=\"1\" src=\"https://www19.a8.net/0.gif?a8mat=4BCJJV+DJ0LMA+5J4W+5YRHE\" alt=\"\">",
+      "note": "A8.net テキスト広告。コードは規約上改変しないこと"
+    },
+    {
+      "name": "Notta ZENCHORD1(AI議事録イヤホン)",
+      "keywords": [
+        "議事録",
+        "会議",
+        "文字起こし"
+      ],
+      "slots": [
+        "end"
+      ],
+      "html": "<a href=\"https://px.a8.net/svt/ejp?a8mat=4BCJJV+DIF60I+5QLS+HW2Q9\" rel=\"nofollow\">\n<img border=\"0\" width=\"300\" height=\"250\" alt=\"\" src=\"https://www21.a8.net/svt/bgt?aid=260925691817&wid=001&eno=01&mid=s00000026776003005000&mc=1\"></a>\n<img border=\"0\" width=\"1\" height=\"1\" src=\"https://www17.a8.net/0.gif?a8mat=4BCJJV+DIF60I+5QLS+HW2Q9\" alt=\"\">",
+      "note": "A8.net バナー(300x250)。大きいので記事末尾のみ"
     }
   ],
   "youtube": {
@@ -38,5 +61,8 @@
       "#大人の雑学",
       "#社会の裏側"
     ]
+  },
+  "affiliate_spare_codes": {
+    "PLAUD NOTE(短いテキスト)": "<a href=\"https://px.a8.net/svt/ejp?a8mat=4BCJJV+DJ0LMA+5J4W+5YZ76\" rel=\"nofollow\">PLAUD NOTE</a>\n<img border=\"0\" width=\"1\" height=\"1\" src=\"https://www12.a8.net/0.gif?a8mat=4BCJJV+DJ0LMA+5J4W+5YZ76\" alt=\"\">"
   }
 }
