@@ -25,7 +25,12 @@
    │   ③ build_site.py … posts/*.md → _site/ に静的サイトを出力
    │   ④ upload-pages-artifact … _site/ をアップロード
    │
-   └─ deploy ジョブ … GitHub Pages に公開
+   ├─ deploy ジョブ … GitHub Pages に公開
+   │
+   └─ announce ジョブ(記事を生成した実行のときだけ)
+       ⑤ social_post.py … 未告知の新着記事を探し、Claude が紹介文を作成
+            → Bluesky に自動投稿 / X 用の下書きを GitHub Issue にする
+            → social_log.json に記録して main に commit & push
 ```
 
 公開URL: https://jinseiowata.github.io/hm_workspace/
@@ -37,6 +42,8 @@
 | `.github/workflows/auto-blog.yml` | 毎日の自動実行・手動実行・デプロイの定義 |
 | `auto_blog/generate_article.py` | テーマ選択・Claude API 呼び出し・記事ファイル保存 |
 | `auto_blog/build_site.py` | 静的サイト生成(HTML / sitemap / RSS / robots / ads.txt) |
+| `auto_blog/social_post.py` | 新着記事の告知(Bluesky 自動投稿、X 用下書きの Issue 作成) |
+| `auto_blog/social_log.json` | 告知済み記事の記録(初回の告知時に自動作成) |
 | `auto_blog/config.json` | サイト名・説明・AdSense ID・Search Console 確認コード・アフィリエイト設定 |
 | `auto_blog/topics.txt` | 記事テーマのキュー(1行1テーマ、`#` 行はコメント) |
 | `auto_blog/posts/` | 生成された記事(Markdown + front matter)。リポジトリに蓄積される |
@@ -136,7 +143,35 @@ topic: topics.txt から取り出した元テーマ
 - 全記事の末尾に「生成AIを活用して作成」「最新情報は公式サイトで確認を」の注記
 - アフィリエイトリンクに `rel="sponsored nofollow noopener"`
 
-### ③ 設定ファイル `config.json`
+### ③ SNS 告知 `social_post.py`
+
+**対象記事**: `social_log.json` に記録がなく、日付が直近3日以内の記事(1回の実行で最大3件)。
+記録がなくても古い記事はまとめて告知しない。
+
+**紹介文の生成**: `claude-sonnet-5`(環境変数 `SOCIAL_MODEL` で変更可)に `messages.parse` で
+`{"bluesky": ..., "x": ...}` を構造化出力させる。記事タイトル・説明・本文冒頭2,000字を渡す。
+- bluesky: 180字以内、ハッシュタグなし
+- x: 90字以内、末尾にハッシュタグ1〜2個
+- 生成に失敗したときは「新着記事: <タイトル>」の定型文で続行する
+
+**Bluesky への投稿**(`BLUESKY_HANDLE` と `BLUESKY_APP_PASSWORD` の両方があるときのみ)
+- `com.atproto.server.createSession` でログイン → `com.atproto.repo.createRecord` で投稿
+- 本文は「紹介文+改行+記事URL」。全体が300字を超える場合は紹介文を切り詰める
+- URL はリンク facet(UTF-8 バイト位置で指定)を付けてクリック可能にし、リンクカード(`app.bsky.embed.external`)も付ける
+
+**X 用の下書き**
+- X API は有料(2026年時点でURL付き投稿1件あたり約$0.20)のため自動投稿はせず、
+  `https://x.com/intent/post?text=…&url=…` のリンクを作る。タップすると投稿画面が開く
+- 紹介文は110字で切り詰める
+- 新着記事ごとの紹介文・記事URL・投稿リンク・Bluesky の結果を1件の GitHub Issue にまとめて作成する
+  (タイトル: `[X投稿] YYYY-MM-DD の新着記事 N件`)。同じ内容を Actions の実行サマリーにも出す
+
+**記録と失敗時の扱い**
+- 告知した記事は `social_log.json` に `announced_at`・Bluesky の結果・Issue URL を記録する
+- Bluesky 投稿や Issue 作成が失敗しても、その記事は「告知済み」として記録される(再試行はしない)
+- 告知ジョブの失敗は記事の公開に影響しない
+
+### ④ 設定ファイル `config.json`
 
 | キー | 用途 | 現在値 |
 |---|---|---|
@@ -146,23 +181,25 @@ topic: topics.txt から取り出した元テーマ
 | `google_site_verification` | Search Console の所有権確認コード | 未設定 |
 | `affiliates[]` | `keywords` のどれかがタイトルか本文に含まれる記事に、`url` が設定済みのものだけ「おすすめ」枠で表示 | 例2件(url 未設定のため非表示) |
 
-### ④ ワークフロー `.github/workflows/auto-blog.yml`
+### ⑤ ワークフロー `.github/workflows/auto-blog.yml`
 
 | トリガー | 動作 |
 |---|---|
 | `schedule`(毎日 21:17 UTC = 06:17 JST) | 記事生成 → commit → ビルド → デプロイ |
 | `workflow_dispatch`(手動実行) | 同上。入力 `force` を ON にすると本日分があっても追加生成 |
-| `push`(main の `auto_blog/**` か workflow 自体が変わったとき) | 記事生成はせず、ビルド → デプロイのみ |
+| `push`(main の `auto_blog/**` か workflow 自体が変わったとき) | 記事生成・告知はせず、ビルド → デプロイのみ |
 
 - bot の commit は `GITHUB_TOKEN` で push されるため、それ自体では push トリガーは再発火しない
 - 同時実行は `concurrency: auto-blog` で1本に制限(後から来た実行は待つ)
 - 実行環境: ubuntu-latest / Python 3.12
+- 権限: `contents: write`(記事・記録の commit)、`pages: write` と `id-token: write`(公開)、`issues: write`(X 用下書き)
 
 **必要な GitHub 側の設定**
 
 | 種類 | 名前 | 状態 |
 |---|---|---|
 | Actions Secret | `ANTHROPIC_API_KEY` | 設定済み |
+| Actions Secret(任意) | `BLUESKY_HANDLE` / `BLUESKY_APP_PASSWORD` | 未設定(Bluesky への投稿はスキップ) |
 | Actions Variable(任意) | `BLOG_MODEL` | 未設定(= Sonnet 5)。`claude-opus-5-5` にすると品質重視 |
 | Pages | Source = GitHub Actions | 設定済み |
 
@@ -174,7 +211,8 @@ topic: topics.txt から取り出した元テーマ
 | Opus 5.5 + 同じ長さ | 約70〜90円 | 約2,000〜2,700円 |
 
 - 実額は Anthropic Console(platform.claude.com)の Usage で確認する
-- GitHub Actions は1回3分程度で、無料枠内に収まる
+- SNS 紹介文の生成は1記事あたり1円未満
+- GitHub Actions は1回3〜4分程度で、無料枠内に収まる
 
 ## 現在の状態(2026-09-25)
 
@@ -189,6 +227,7 @@ topic: topics.txt から取り出した元テーマ
 | #1 | ブログ一式を追加(当初の既定モデルは Opus 5) |
 | #2 | 既定モデルを Opus 5.5 に変更。フォールバックを Opus / Fable 系のみに限定 |
 | #3 | 記事を6,000〜8,000字に制限、Web検索を最大3回に削減、長さの警告ログ追加、既定モデルを Sonnet 5 に変更 |
+| #4 | この仕様書を追加。公開後の SNS 告知(Bluesky 自動投稿、X 用下書きの Issue 作成)を追加 |
 
 ## 未対応・要検討事項
 
@@ -199,5 +238,7 @@ topic: topics.txt から取り出した元テーマ
 - **分量の実績確認**: Sonnet 5 が6,000〜8,000字の指示を守るか、次回以降の記事で確認する
 - **APIキーの有効期限**: キー作成時に有効期限を設定した場合、期限前に作り直して Secret を更新する必要がある
 - **Node.js 20 の非推奨警告**: `actions/checkout@v4` などが Node 20 向けで、現在は Node 24 で強制実行されている(動作に支障なし)。将来、各 action の新しいメジャー版に上げる
+- **Bluesky アカウントの作成と Secret 登録**: 登録するまで Bluesky への投稿はスキップされる
+- **X への自動投稿**: 費用(月約900円)に見合うアクセスが出てから検討する
 - **生成失敗時の通知**: 現状は Actions の実行が失敗するだけで、通知の仕組みはない(GitHub のメール通知に依存)
 - **記事の品質管理**: 生成記事の誤り確認・人の手による追記の運用は未定
