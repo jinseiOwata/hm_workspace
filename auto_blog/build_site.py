@@ -191,14 +191,18 @@ MID_AFFILIATE_ITEMS = 2  # 記事途中の枠に出す最大件数(読みやす�
 
 
 def matched_affiliates(post: dict, config: dict, slot: str | None = None) -> list[dict]:
-    """記事本文かタイトルにキーワードが含まれる、提携済み(url か html が設定済み)の広告を設定順に返す。
+    """記事の中心テーマ(タイトル・説明文・タグ・元テーマ)にキーワードが含まれる、提携済み
+    (url か html が設定済み)の広告を設定順に返す。本文は見ない(本文で軽く触れただけの話題の広告を出さないため)。
     slot("mid" / "end")を指定すると、その枠に出す設定(slots、省略時は両方)の広告だけに絞る。"""
+    theme = " ".join(
+        [post.get("title", ""), post.get("description", ""), post.get("topic", ""), " ".join(post.get("tags_list", []))]
+    )
     return [
         a
         for a in config.get("affiliates", [])
         if (a.get("url") or a.get("html"))
         and (slot is None or slot in a.get("slots", ["mid", "end"]))
-        and any(k in post["text"] or k in post["title"] for k in a.get("keywords", []))
+        and any(k in theme for k in a.get("keywords", []))
     ]
 
 
