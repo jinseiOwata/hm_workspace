@@ -39,7 +39,7 @@
 **YouTube 新着動画の告知**(別ワークフロー)
 
 ```
-[3時間おき 毎時23分(UTC 0,3,6,…時)]  GitHub Actions (.github/workflows/youtube-announce.yml)
+[1日2回 12:43 / 21:13 JST]  GitHub Actions (.github/workflows/youtube-announce.yml)
    youtube_announce.py … チャンネルの RSS を取得 → 未告知の新着動画を探す
        → Claude が紹介文を作成 → Bluesky に自動投稿(サムネイル付き)/ X 用の下書きを GitHub Issue にする
        → youtube_log.json に記録して main に commit & push
@@ -56,7 +56,7 @@
 | `auto_blog/social_log.json` | 告知済み記事の記録(初回の告知時に自動作成) |
 | `auto_blog/youtube_announce.py` | YouTube 新着動画の告知(紹介文作成・投稿部分は social_post.py を共用) |
 | `auto_blog/youtube_log.json` | 記録済み・告知済みの動画とチャンネルIDの記録(初回実行時に自動作成) |
-| `.github/workflows/youtube-announce.yml` | 3時間おきの YouTube 新着チェック |
+| `.github/workflows/youtube-announce.yml` | 1日2回(12:43 / 21:13 JST)の YouTube 新着チェック |
 | `auto_blog/config.json` | サイト名・説明・AdSense ID・Search Console 確認コード・アフィリエイト設定 |
 | `auto_blog/topics.txt` | 記事テーマのキュー(1行1テーマ、`#` 行はコメント) |
 | `auto_blog/posts/` | 生成された記事(Markdown + front matter)。リポジトリに蓄積される |
@@ -342,7 +342,7 @@ GitHub Pages 自体にはアクセス数を見る機能がないため、外部�
 - 実額は Anthropic Console(platform.claude.com)の Usage で確認する
 - SNS 紹介文の生成は1記事あたり1円未満
 - YouTube 動画の紹介文は1本あたり約1円。新着チェックは無料
-- GitHub Actions はブログが1回3〜4分(月約120分)、YouTube チェックが1回約30秒×1日8回(月約250分)で、無料枠(月2,000分)内に収まる
+- GitHub Actions はブログが1回3〜4分(月約120分)、YouTube チェックが1回約30秒×1日2回(月約30分)で、無料枠(月2,000分)内に収まる
 
 ## 現在の状態(2026-09-25 夕方)
 
@@ -360,7 +360,7 @@ GitHub Pages 自体にはアクセス数を見る機能がないため、外部�
 - 2026-09-25 15:47 JST の手動実行で、初めて本番で告知した: 「会社が払う本当の額」「手取りの正体」「特売の卵の裏側」の3本を Bluesky に投稿し、X 用の下書きを Issue #9 で作成
   (この時点ではチャンネル名が未設定でブログ名入りの紹介文になったため、PR #10 で改善)
 - 定期実行: 追加直後は GitHub 側で数時間始まらなかったが、2026-09-25 17:57 JST に初めて schedule イベントで実行され成功
-- 1週間分のショートを1日おき 12:00 に予約公開中。各動画は公開後の最初のチェック(最大3時間後)で告知される
+- 1週間分のショートを1日おき 12:00 に予約公開中。各動画は公開後の最初のチェック(12:43 か 21:13 JST、GitHub の定期実行の遅延あり)で告知される
 
 ## 変更履歴
 
@@ -384,6 +384,7 @@ GitHub Pages 自体にはアクセス数を見る機能がないため、外部�
 | #18 | 追加提携の8件を確認し、レンタルサーバー・ドメイン・Webセキュリティ・セキュリティソフトの広告5件を追加(全15件) |
 | #19 | 朝の記事生成に予備の定期実行を3回追加(07:47 / 09:17 / 11:47 JST)。定期実行の遅延・取りこぼし対策 |
 | #20 | 広告の選び方を、本文ではなくタイトル・説明文・タグ・元テーマとの照合に変更(本文で軽く触れただけの話題の広告を出さない)。ESET のキーワードを調整 |
+| #23 | YouTube の新着チェックを3時間おきから1日2回(12:43 / 21:13 JST)に変更 |
 
 ## 未対応・要検討事項
 
