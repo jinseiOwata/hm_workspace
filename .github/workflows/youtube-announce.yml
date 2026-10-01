@@ -2,7 +2,9 @@ name: youtube-announce
 
 on:
   schedule:
-    - cron: "23 */3 * * *"   # 3時間おき(UTC の 0,3,6,…時23分)に新着動画をチェック
+    # 1日2回チェック(12:00 公開の動画を拾う昼と、夜の取りこぼし拾い)
+    - cron: "43 3 * * *"    # 12:43 JST
+    - cron: "13 12 * * *"   # 21:13 JST
   workflow_dispatch:
 
 permissions:

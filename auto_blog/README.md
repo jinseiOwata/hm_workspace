@@ -61,12 +61,12 @@ AdSense 審査で必要な「運営者情報」「プライバシーポリシー
 
 ### YouTube の新着動画も告知する
 
-`.github/workflows/youtube-announce.yml` が **3時間おき** に YouTube チャンネル(`config.json` の `youtube.handle`)の新着動画を確認し、
+`.github/workflows/youtube-announce.yml` が **1日2回(12:43 と 21:13)** に YouTube チャンネル(`config.json` の `youtube.handle`)の新着動画を確認し、
 ブログ記事と同じように **Bluesky へ自動投稿(サムネイル付き)** と **X 用下書きの Issue 作成** を行います。
 
 - YouTube の API キーは不要です(チャンネルの公開 RSS を使います)
 - 初回の実行ではチャンネルの既存動画を記録するだけで、告知はしません(過去動画をまとめて投稿しないため)
-- 公開された動画を、次のチェック(最大3時間後)で告知します。予約公開の動画も、公開された後のチェックで告知されます
+- 公開された動画を、次のチェック(12:43 か 21:13。GitHub の都合で遅れることがあります)で告知します。予約公開の動画も、公開された後のチェックで告知されます
 - 告知済みの動画は `youtube_log.json` に記録され、二重に告知されません
 - ショート動画は `youtube.com/shorts/…`、通常の動画は `youtube.com/watch?v=…` のリンクになります
 - チャンネルを変えるときは `config.json` の `youtube.handle` を書き換え、`youtube_log.json` を削除してください
