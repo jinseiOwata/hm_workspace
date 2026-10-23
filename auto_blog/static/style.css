@@ -66,6 +66,9 @@ a:hover { text-decoration: underline; }
 .brand-mark { width: 28px; height: 28px; filter: drop-shadow(0 0 8px rgba(139,92,246,.6)); }
 .brand-name { font-family: "Inter", "Noto Sans JP", sans-serif; font-weight: 800; font-size: 1.2rem; letter-spacing: .02em; background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .tagline { color: var(--muted); font-size: .82rem; }
+.site-nav { margin-left: auto; }
+.site-nav a { font-size: .85rem; color: var(--fg); padding: 4px 12px; border: 1px solid var(--line); border-radius: 999px; }
+.site-nav a:hover { border-color: var(--cyan); text-decoration: none; }
 
 /* 共通パーツ */
 .eyebrow { display: inline-flex; align-items: center; gap: 8px; font-family: "Inter", sans-serif; font-weight: 700; font-size: .72rem; letter-spacing: .18em; color: var(--cyan); margin: 0 0 10px; }
@@ -204,3 +207,25 @@ tr:nth-child(even) td { background: rgba(255,255,255,.02); }
   .card-grid { grid-template-columns: 1fr; }
   .post-body h2 { font-size: 1.18rem; }
 }
+
+/* 開発中のゲーム「ChatArena(仮)」 */
+.game-banner { display: grid; grid-template-columns: minmax(0, 220px) 1fr; gap: 16px; align-items: center; margin: 8px 0 8px; padding: 14px; border-radius: var(--radius); background: var(--panel); border: 1px solid var(--line); color: var(--fg); }
+.game-banner:hover { border-color: var(--cyan); text-decoration: none; }
+.game-banner img { width: 100%; height: auto; border-radius: 10px; display: block; }
+.game-banner-text { display: grid; gap: 4px; }
+.game-banner-text b { font-size: 1.1rem; color: var(--fg-strong); }
+.game-banner-text > span:last-child { color: var(--muted); font-size: .9rem; }
+.game-banner .eyebrow { margin: 0; }
+.game-tentative { font-size: .36em; color: var(--muted); font-weight: 500; margin-left: .4em; -webkit-text-fill-color: var(--muted); }
+.game-actions { margin: 18px 0; }
+.game-button { display: inline-block; padding: 10px 20px; border-radius: 999px; background: var(--grad); color: #06121f; font-weight: 700; }
+.game-button:hover { text-decoration: none; filter: brightness(1.08); }
+.game-shot { margin: 18px 0 0; }
+.game-shot img { width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line); display: block; }
+.game-shot figcaption { color: var(--muted); font-size: .85rem; margin-top: 6px; }
+.game-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+.game-card .card-link { cursor: default; }
+.game-wip { padding: 16px 20px; border-radius: var(--radius); background: var(--panel); border: 1px solid var(--line); border-left: 4px solid #f2c230; }
+.game-wip ul { margin: 8px 0 0; padding-left: 1.3em; }
+.game-wip-badge { display: inline-block; font-size: .72rem; font-weight: 700; color: #17181b; padding: 1px 8px; border-radius: 3px; background: repeating-linear-gradient(-45deg, #f2c230 0 8px, #e0ad16 8px 16px); }
+@media (max-width: 600px) { .game-banner { grid-template-columns: 1fr; } }

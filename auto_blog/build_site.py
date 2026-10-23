@@ -26,6 +26,7 @@ from generate_article import parse_post
 BASE_DIR = Path(__file__).resolve().parent
 POSTS_DIR = BASE_DIR / "posts"
 STATIC_DIR = BASE_DIR / "static"
+CHATARENA_DIR = BASE_DIR / "chatarena"  # 開発中のゲーム「ChatArena(仮)」の専用ページ
 OUT_DIR = BASE_DIR / "_site"
 
 
@@ -106,6 +107,7 @@ class Site:
     <span class="brand-name">{esc(c['site_name'])}</span>
   </a>
   <span class="tagline">{esc(c['tagline'])}</span>
+  <nav class="site-nav"><a href="{self.url('chatarena/')}">開発中のゲーム</a></nav>
 </div></header>
 <main class="wrap">
 {body}
@@ -266,6 +268,26 @@ def post_card(site: Site, p: dict) -> str:
 </article>"""
 
 
+def build_chatarena(site: "Site") -> None:
+    """ChatArena(仮)の専用ページ(_site/chatarena/)と、作者の遊び方ガイド(_site/chatarena/guide/)を出力する。
+    ガイドは作者が書いた独立した HTML をそのまま載せる(独自のデザインのため、ブログのテンプレートには入れない)。"""
+    if not CHATARENA_DIR.exists():
+        return
+    out = OUT_DIR / "chatarena"
+    shutil.copytree(CHATARENA_DIR / "guide", out / "guide")
+    body = (CHATARENA_DIR / "hub.html").read_text(encoding="utf-8")
+    body = body.replace("{guide}", site.url("chatarena/guide/")).replace("{img}", site.url("chatarena/guide/img/"))
+    (out / "index.html").write_text(
+        site.page(
+            title="開発中のゲーム「ChatArena(仮)」",
+            description="作者が開発中のアクションゲーム「ChatArena(仮)」の紹介。視聴者のコメントが試合に飛んでくる、配信×アクションゲームです。",
+            body=body,
+            path="chatarena/",
+        ),
+        encoding="utf-8",
+    )
+
+
 def build() -> None:
     config = json.loads((BASE_DIR / "config.json").read_text(encoding="utf-8"))
     site = Site(config)
@@ -275,6 +297,7 @@ def build() -> None:
         shutil.rmtree(OUT_DIR)
     OUT_DIR.mkdir()
     shutil.copy(STATIC_DIR / "style.css", OUT_DIR / "style.css")
+    build_chatarena(site)
 
     # 記事ページ
     for i, p in enumerate(posts):
@@ -317,6 +340,11 @@ def build() -> None:
     <li>毎朝更新</li><li>コピペで使えるプロンプト</li><li>公開記事 {len(posts)}本</li>
   </ul>
 </section>
+<a class="game-banner" href="{site.url('chatarena/')}">
+  <img src="{site.url('chatarena/guide/img/title.jpg')}" width="1280" height="720" alt="開発中のゲーム ChatArena(仮)のタイトル画面" loading="lazy">
+  <span class="game-banner-text"><span class="eyebrow"><span class="ai-dot"></span>GAME IN DEVELOPMENT</span>
+  <b>開発中のゲーム「ChatArena(仮)」</b><span>視聴者のコメントが試合に飛んでくる、配信×アクションゲーム。紹介と遊び方ガイドはこちら →</span></span>
+</a>
 <h2 class="section-title">最新の記事</h2>
 <div class="card-grid">"""
     (OUT_DIR / "index.html").write_text(
@@ -355,7 +383,7 @@ def build() -> None:
 
     # SEO 関連ファイル
     if site.base_url:
-        urls = [""] + [p["file"] for p in posts] + [f"{tag_slug(t)}.html" for t in tags] + ["about.html", "privacy.html"]
+        urls = ["", "chatarena/", "chatarena/guide/"] + [p["file"] for p in posts] + [f"{tag_slug(t)}.html" for t in tags] + ["about.html", "privacy.html"]
         lastmod = {p["file"]: p["date"] for p in posts}
         entries = "".join(
             f"<url><loc>{esc(site.abs_url(u))}</loc>{f'<lastmod>{lastmod[u]}</lastmod>' if u in lastmod else ''}</url>"
