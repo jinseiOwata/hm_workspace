@@ -1,0 +1,472 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ChatArena 遊び方ガイド</title>
+<meta name="description" content="開発中のゲーム「ChatArena(仮)」の紹介と遊び方ガイド(2026年10月23日の開発版の時点)。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: 配信番組のオンエア画面。上に「LIVE」の帯、本文は封鎖区域の黄黒の縞で区切った一段組。暗い一色の世界観で固定 */
+:root {
+  --bg: #121418;          /* 封鎖区域の夜のコンクリート */
+  --panel: #1b1e24;       /* 機材の筐体 */
+  --line: #2c313a;
+  --fg: #e9e6df;
+  --muted: #a3a7ae;
+  --hazard: #f2c230;      /* 封鎖の黄色 */
+  --live: #e5352b;        /* 会社の配信の赤＝チーム色 */
+  --rogue: #a46ef2;       /* 暴走機械の紫 */
+  --ok: #5cc8a8;
+  --display: "Dela Gothic One", "Hiragino Sans", "Yu Gothic", sans-serif;
+  --body: "Zen Kaku Gothic New", "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "Consolas", monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg);
+  font-family: var(--body); font-size: 16px; line-height: 1.8;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 48px;
+}
+.wrap { max-width: 980px; margin: 0 auto; }
+h1, h2, h3 { font-family: var(--display); font-weight: 400; line-height: 1.3; text-wrap: balance; margin: 0; }
+h2 { font-size: clamp(1.5rem, 4vw, 2.1rem); }
+h3 { font-size: 1.2rem; }
+p { margin: 0; max-width: 65ch; }
+a { color: var(--hazard); }
+a:focus-visible, button:focus-visible, summary:focus-visible { outline: 2px solid var(--hazard); outline-offset: 3px; }
+img { display: block; max-width: 100%; height: auto; border-radius: 4px; }
+figure { margin: 0; display: grid; gap: 6px; }
+figcaption { font-size: .82rem; color: var(--muted); }
+kbd {
+  font-family: var(--mono); font-size: .82rem; font-weight: 700;
+  background: #262a32; color: var(--fg); border: 1px solid #3a404b; border-bottom-width: 3px;
+  border-radius: 5px; padding: 1px 7px; white-space: nowrap;
+}
+.mono { font-family: var(--mono); }
+
+/* オンエアの帯 */
+.onair {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px;
+  padding-block: 12px; font-family: var(--mono); font-size: .8rem; color: var(--muted);
+  border-bottom: 1px solid var(--line);
+}
+.rec { display: inline-flex; align-items: center; gap: 8px; color: var(--fg); font-weight: 700; letter-spacing: .08em; }
+.rec::before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: var(--live); box-shadow: 0 0 10px var(--live); animation: blink 1.6s steps(2) infinite; }
+@keyframes blink { 50% { opacity: .25; } }
+@media (prefers-reduced-motion: reduce) { .rec::before { animation: none; } }
+.onair nav { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-left: auto; }
+.onair nav a { color: var(--muted); text-decoration: none; }
+.onair nav a:hover { color: var(--hazard); }
+
+/* 冒頭 */
+.hero { display: grid; gap: 22px; padding-block: 36px 28px; }
+.hero h1 { font-size: clamp(2.4rem, 9vw, 4.6rem); letter-spacing: .01em; }
+.hero h1 small { font-family: var(--body); font-size: .32em; color: var(--muted); font-weight: 500; margin-left: .4em; }
+.lede { font-size: 1.12rem; max-width: 40em; }
+.lede b { color: var(--hazard); font-weight: 700; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { font-size: .82rem; border: 1px solid var(--line); background: var(--panel); border-radius: 999px; padding: 2px 12px; }
+.hero-shot { position: relative; }
+.hero-shot img { border: 1px solid var(--line); }
+
+/* 区切りの縞 */
+.stripe { height: 10px; margin-block: 44px 28px; border-radius: 2px;
+  background: repeating-linear-gradient(-45deg, var(--hazard) 0 14px, #17181b 14px 28px); opacity: .9; }
+section { display: grid; gap: 20px; scroll-margin-top: 16px; }
+.kicker { font-family: var(--mono); font-size: .78rem; letter-spacing: .14em; color: var(--hazard); text-transform: uppercase; }
+
+/* 工事中の印 */
+.wip {
+  display: inline-flex; align-items: center; gap: 6px; vertical-align: middle;
+  font-family: var(--body); font-size: .74rem; font-weight: 700; color: #17181b;
+  background: repeating-linear-gradient(-45deg, var(--hazard) 0 8px, #e0ad16 8px 16px);
+  border-radius: 3px; padding: 1px 8px; letter-spacing: .04em; white-space: nowrap;
+}
+.wip::before { content: "▲"; font-size: .7em; }
+.note { border-left: 4px solid var(--hazard); background: var(--panel); padding: 12px 16px; border-radius: 0 6px 6px 0; font-size: .95rem; }
+
+.two { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 18px; align-items: start; }
+.two > * { min-width: 0; }
+.list { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; }
+
+/* 遠征の流れ（順番に意味がある） */
+.flow { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 170px), 1fr)); gap: 10px; counter-reset: step; }
+.flow li { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px; counter-increment: step; display: grid; gap: 4px; align-content: start; }
+.flow li::before { content: counter(step); font-family: var(--mono); font-weight: 700; color: var(--hazard); font-size: .9rem; }
+.flow b { font-size: 1rem; }
+.flow span { font-size: .86rem; color: var(--muted); line-height: 1.6; }
+.flow li.night { border-color: #3b2c55; }
+.flow li.night::before { color: var(--rogue); }
+
+/* モードの表・操作の表 */
+.table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 6px; }
+table { border-collapse: collapse; width: 100%; min-width: 560px; font-size: .94rem; }
+th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+thead th { background: var(--panel); font-weight: 700; font-size: .82rem; color: var(--muted); letter-spacing: .04em; }
+tbody tr:last-child td { border-bottom: 0; }
+td.op { font-weight: 700; white-space: nowrap; }
+tr.must td.op::after { content: "基本"; margin-left: 8px; font-size: .68rem; color: #17181b; background: var(--ok); border-radius: 3px; padding: 0 5px; vertical-align: 2px; }
+
+/* 入口の3枚 */
+.doors { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 14px; }
+.door { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 16px; display: grid; gap: 8px; align-content: start; }
+.door .tag { font-family: var(--mono); font-size: .76rem; color: var(--muted); }
+.door.coop { border-top: 3px solid var(--ok); }
+.door.boss { border-top: 3px solid var(--rogue); }
+.door.versus { border-top: 3px solid var(--live); }
+
+/* コメントの例 */
+.chat { background: #0d0f12; border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px; font-family: var(--mono); font-size: .9rem; display: grid; gap: 6px; }
+.chat div { display: flex; gap: 10px; flex-wrap: wrap; }
+.chat .u { color: var(--muted); min-width: 7em; }
+.chat .t { color: var(--fg); }
+.chat .r { color: var(--ok); font-family: var(--body); font-size: .82rem; }
+.haz { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr)); gap: 10px; }
+.haz div { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; display: grid; gap: 2px; }
+.haz b { font-size: .82rem; color: var(--muted); font-weight: 500; }
+.haz span { font-size: .95rem; }
+.haz .help { border-color: #24483f; }
+.haz .stage { border-color: #3b2c55; }
+
+/* キャラ */
+.cast { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); gap: 8px 16px; margin: 0; }
+.cast div { display: grid; gap: 0; padding-block: 6px; border-bottom: 1px solid var(--line); }
+.cast dt { font-weight: 700; }
+.cast dt small { color: var(--muted); font-weight: 400; margin-left: 6px; font-size: .8rem; }
+.cast dd { margin: 0; font-size: .86rem; color: var(--muted); line-height: 1.6; }
+.cast .main dt::after { content: "メイン"; margin-left: 8px; font-size: .68rem; color: #17181b; background: var(--live); border-radius: 3px; padding: 0 5px; vertical-align: 2px; }
+.scroller { overflow-x: auto; border: 1px solid var(--line); border-radius: 6px; background: #f4f4f4; }
+.scroller img { max-width: none; width: 1100px; border-radius: 0; }
+
+.wiplist { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.wiplist li { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 10px 14px; display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; align-items: baseline; }
+.wiplist li > b { grid-column: 2; }
+.wiplist li > span:last-child { grid-column: 2; color: var(--muted); font-size: .9rem; }
+.wiplist .wip { grid-row: 1 / span 2; }
+
+footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--line); font-size: .82rem; color: var(--muted); display: grid; gap: 4px; }
+@media (max-width: 520px) { .onair nav { margin-left: 0; } }
+</style>
+
+<div class="wrap">
+  <p class="crumb" style="margin:0;padding-top:12px;font-size:.82rem"><a href="../">← ChatArena（仮）開発中のページへ</a> ・ <a href="../../">AI時短ラボ</a></p>
+  <header class="onair">
+    <span class="rec">ON AIR</span>
+    <span>開発中のゲーム紹介 ／ 2026年10月23日の時点</span>
+    <nav aria-label="目次">
+      <a href="#about">どんなゲーム</a>
+      <a href="#modes">モード</a>
+      <a href="#controls">操作</a>
+      <a href="#stream">配信者モード</a>
+      <a href="#cast">キャラ</a>
+      <a href="#online">友だちと遊ぶ</a>
+      <a href="#wip">工事中</a>
+    </nav>
+  </header>
+
+  <div class="hero">
+    <h1>ChatArena<small>（仮の名前）</small></h1>
+    <p class="lede">暴走した機械がうろつく<b>封鎖区域</b>で、部品を回収して稼ぐ「回収屋」になるアクションゲーム。その仕事ぶりは会社が<b>生配信</b>していて、視聴者がコメントで妨害したり応援したりしてきます。</p>
+    <div class="chips">
+      <span class="chip">三人称のアクション</span>
+      <span class="chip">1〜4人の協力・最大10人の対戦</span>
+      <span class="chip">腕と背中の武器を付け替え</span>
+      <span class="chip">YouTube・Twitch のコメントが飛んでくる</span>
+      <span class="chip">PC（Steam で出す予定）</span>
+    </div>
+    <figure class="hero-shot">
+      <img src="img/title.jpg" width="1280" height="720" alt="タイトル画面。左にメニュー（遠征・レイド・アリーナバトル・オンライン・ガレージ・設定）、右に3人のキャラクター、上をコメントが流れている">
+      <figcaption>タイトル画面。後ろの空を視聴者のコメントが流れます。</figcaption>
+    </figure>
+  </div>
+
+  <div class="stripe" aria-hidden="true"></div>
+
+  <section id="about">
+    <span class="kicker">About</span>
+    <h2>どんなゲーム？</h2>
+    <div class="two">
+      <div style="display:grid;gap:14px">
+        <p>港の工業地帯で機械が一斉に暴走し、一帯が封鎖されました。中に残った部品は高く売れるので、会社が「回収屋」を雇って送り込み、その様子を番組として配信しています。</p>
+        <p>プレイヤーは借金や事情を抱えた出場者のひとり。両腕と背中に武器を付けて出撃し、暴走機械を倒して部品を持ち帰ります。</p>
+        <ul class="list">
+          <li><b>腕は2本とも武器。</b>右腕は銃、左腕は近接や盾など。背中にはミサイルやブースター。</li>
+          <li><b>移動はブーストが主役。</b>ダッシュ、空中ジャンプ、ホバーで飛び回ります。</li>
+          <li><b>視聴者が試合に口を出す。</b>コメントに「P1 メテオ」と書くと、本当に P1 にメテオが落ちます。</li>
+          <li><b>誰も死なない。</b>倒されても「退場」扱い。殺伐としすぎない、ちょっと間抜けな事故が起きる世界です。</li>
+        </ul>
+      </div>
+      <figure>
+        <img src="img/main4.jpg" width="1100" height="520" alt="メインの4人の設定画。左からネム、リン、シオン、カナタ。全員が白と赤の機械の腕と脚を付けている">
+        <figcaption>メインの4人（左から ネム・リン・シオン・カナタ）。設定画です。</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <div class="stripe" aria-hidden="true"></div>
+
+  <section id="modes">
+    <span class="kicker">Modes</span>
+    <h2>遊び方は3つの入口から</h2>
+    <p>タイトル画面で「遠征」「レイド」「アリーナバトル」のどれかを選びます。遠征とレイドは仲間と協力、アリーナバトルは対戦です。</p>
+    <div class="doors">
+      <div class="door coop">
+        <span class="tag">協力 ／ 1〜4人</span>
+        <h3>遠征</h3>
+        <p>広いマップで拠点を攻めて強くなり、最後に巨大な「夜の王」を倒す。いちばん遊びごたえのあるモード。</p>
+      </div>
+      <div class="door boss">
+        <span class="tag">協力 ／ ボス戦</span>
+        <h3>レイド</h3>
+        <p>巨大ボスに全員で挑む。予告を見て大技を避け、スキを叩く。プレイヤーがボス役になる遊び方もあります。</p>
+      </div>
+      <div class="door versus">
+        <span class="tag">対戦 ／ 2〜10人</span>
+        <h3>アリーナバトル</h3>
+        <p>闘技場で撃ち合い、場外に落とし合う。リングアウト、バトルロイヤル、チーム戦など8種類。</p>
+      </div>
+    </div>
+
+    <h3 style="margin-top:12px">遠征の流れ</h3>
+    <p>毎回ちがう地形のマップに、仲間と（または味方の Bot と）出撃します。昼のあいだに育って、夜にボスと戦う。これを2日くり返します。</p>
+    <ol class="flow">
+      <li><b>出撃</b><span>ガレージで組んだ装備で出る。腕と背中は2組持てて、戦闘中に入れ替え（換装）できる。</span></li>
+      <li><b>昼：拠点を攻める</b><span>砦・研究所・暴走機械の巣などを制圧。経験値と部品が手に入り、強化を3択から選ぶ。</span></li>
+      <li class="night"><b>夜：ボスが来る</b><span>安全な範囲が狭まり、夜のボスが現れる。倒れた仲間は近くで起こしてあげる。</span></li>
+      <li><b>2日目</b><span>夜明けとともにもう一度。強くなった分、奥の拠点へ。</span></li>
+      <li class="night"><b>最終戦：夜の王</b><span>専用の戦場で巨大ボスと決戦。弱点の属性を組Bに入れておくと楽になる。</span></li>
+      <li><b>持ち帰り</b><span>遠征の強化はその回かぎり。ただし「コア」は持ち帰って、次の遠征に付けていける。</span></li>
+    </ol>
+    <div class="two">
+      <figure>
+        <img src="img/exp_day.jpg" width="1280" height="720" alt="遠征の昼。工業地帯のマップを走るキャラクター、右上に作戦地図、左下に体力と装備の欄">
+        <figcaption>遠征の昼。右上が地図、左下が自分と仲間の状態。</figcaption>
+      </figure>
+      <figure>
+        <img src="img/exp_night.jpg" width="1280" height="720" alt="遠征の夜。紫の空の下で戦うキャラクター、画面上部に視聴者のコメントが並ぶ">
+        <figcaption>遠征の夜。紫は暴走機械の色。配信中は上にコメントが並びます。</figcaption>
+      </figure>
+    </div>
+    <div class="two">
+      <figure>
+        <img src="img/result.jpg" width="1280" height="720" alt="遠征の結果画面。遠征成功の文字、日数、制圧した拠点数、持ち帰るコアの一覧">
+        <figcaption>遠征の結果。持ち帰れるコアがここに出ます。</figcaption>
+      </figure>
+      <div style="display:grid;gap:12px;align-content:start">
+        <h3>レイドの2つの遊び方</h3>
+        <ul class="list">
+          <li><b>レイド（巨大ボス）</b>：全員で巨大ボスに挑む。1人2機（倒されたら予備の1機で戻れる）。12分以内に倒せば成功。</li>
+          <li><b>ボス討伐（1対4）</b>：巨大ボス1体 対 挑戦者4人。最初の5分は狩りの時間で、挑戦者は雑魚を倒して強くなり、ボスは歩き回って挑戦者を狩る。最後に全員でボスと決戦。</li>
+        </ul>
+        <p class="note">レイドは今回の画像がありません。ボスの見た目は差し替えの途中です。<span class="wip">工事中</span></p>
+      </div>
+    </div>
+
+    <h3 style="margin-top:12px">アリーナバトルのルール</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>ルール</th><th>勝ち方</th></tr></thead>
+        <tbody>
+          <tr><td class="op">リングアウト</td><td>縮んでいく安全な範囲の外に落とすか、倒す。最後の1人がそのラウンドの勝ち。先に決めた回数勝った人が優勝。</td></tr>
+          <tr><td class="op">バトルロイヤル</td><td>最大10人の個人戦を1回勝負。落ちた順に順位がつく。</td></tr>
+          <tr><td class="op">チーム戦</td><td>2対2〜5対5。味方には攻撃が当たらない。相手を全滅させるか、時間切れの時に残っている人数が多い方の勝ち。</td></tr>
+          <tr><td class="op">破壊</td><td>場外なし。倒されると残機が1減って復活。残機が尽きたら脱落。</td></tr>
+          <tr><td class="op">陣取り</td><td>丘の上に1人だけで立つとポイント。取り合っている間は誰も入らない。</td></tr>
+          <tr><td class="op">時限爆弾</td><td>爆弾を持たされたら、誰かに体当たりして押し付ける。爆発したら残機が1減る。</td></tr>
+          <tr><td class="op">レース</td><td>ゲートを順番にくぐって、決まった周回を先に走り切る。</td></tr>
+          <tr><td class="op">防衛（ホード）</td><td>場の縁から押し寄せる敵の波をしのぐ。しのぎ切ったら倒した数で勝ち負け。</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <figure>
+      <img src="img/arena.jpg" width="1280" height="720" alt="アリーナバトルの対戦画面。広い闘技場で向かい合う2人、上にコメントで飛んできた妨害の表示">
+      <figcaption>アリーナバトル。右上の「alice ▶ P1 メテオ」は、視聴者のコメントで妨害が飛んできた知らせです。</figcaption>
+    </figure>
+  </section>
+
+  <div class="stripe" aria-hidden="true"></div>
+
+  <section id="controls">
+    <span class="kicker">Controls</span>
+    <h2>操作</h2>
+    <p>キーボードとマウス、またはパッド（Xbox の配置で表記）で遊べます。割り当てはタイトルの「設定」でいつでも変えられ、画面の案内もそれに合わせて変わります。まずは「基本」の印がある操作だけ覚えれば遊べます。</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>操作</th><th>キーボード・マウス</th><th>パッド</th><th>ひとこと</th></tr></thead>
+        <tbody>
+          <tr class="must"><td class="op">移動</td><td><kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd></td><td>左スティック</td><td></td></tr>
+          <tr class="must"><td class="op">視点</td><td>マウス</td><td>右スティック</td><td>感度と上下の反転は設定で</td></tr>
+          <tr class="must"><td class="op">右腕（銃）</td><td>左クリック</td><td><kbd>RT</kbd></td><td>押しっぱなしで連射する武器もある</td></tr>
+          <tr class="must"><td class="op">左腕</td><td>右クリック</td><td><kbd>LT</kbd></td><td>盾は長押しで構える</td></tr>
+          <tr class="must"><td class="op">ジャンプ</td><td><kbd>Space</kbd></td><td><kbd>A</kbd></td><td>空中でもう一度押すと空中ジャンプ、長押しでホバー</td></tr>
+          <tr class="must"><td class="op">ダッシュ</td><td><kbd>Shift</kbd></td><td><kbd>B</kbd></td><td>長押しで走り続ける。攻撃のスキを消すのにも使える</td></tr>
+          <tr class="must"><td class="op">ロックオン</td><td>ホイール押し込み または <kbd>Q</kbd></td><td><kbd>R3</kbd></td><td>ホイール／右スティックの左右で相手を切り替え</td></tr>
+          <tr><td class="op">背中の武器</td><td><kbd>E</kbd></td><td><kbd>RB</kbd></td><td>ミサイル・ブースターなどの大技</td></tr>
+          <tr><td class="op">必殺技</td><td><kbd>V</kbd></td><td><kbd>LB</kbd></td><td>遠征・ボス討伐で、ゲージが満タンの時</td></tr>
+          <tr><td class="op">調べる・拾う</td><td><kbd>F</kbd></td><td><kbd>X</kbd></td><td>強化の箱・落ちている部品。強化の3択の決定にも使う</td></tr>
+          <tr><td class="op">換装</td><td><kbd>R</kbd></td><td>十字キー↑</td><td>遠征で、腕と背中の組Aと組Bを入れ替える</td></tr>
+          <tr><td class="op">修理キット</td><td><kbd>G</kbd></td><td>十字キー←</td><td>遠征で体力を回復</td></tr>
+          <tr><td class="op">巡航ブースト</td><td><kbd>C</kbd></td><td><kbd>L3</kbd></td><td>溜めてから長い距離を一気に走る</td></tr>
+          <tr><td class="op">作戦地図</td><td><kbd>Tab</kbd> または <kbd>M</kbd></td><td>View ボタン</td><td>ピン・攻撃の指示・集合を仲間に出せる。開いている間は動けない</td></tr>
+          <tr><td class="op">一時停止</td><td><kbd>Esc</kbd></td><td>Start</td><td></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="two">
+      <figure>
+        <img src="img/practice.jpg" width="1280" height="720" alt="練習場。キャラクターの前に的のロボが並び、上に与えたダメージの表示">
+        <figcaption>練習場（ガレージから入れる）。的を相手に武器を試せます。</figcaption>
+      </figure>
+      <div style="display:grid;gap:10px;align-content:start">
+        <h3>はじめての人へ</h3>
+        <ul class="list">
+          <li>まずガレージの「練習場」で、右腕・左腕・背中を順に撃ってみるのがおすすめ。</li>
+          <li>敵は強い一撃で吹っ飛びます。場外がある場では、縁に追い込んで落とすのが近道。</li>
+          <li>迷ったら <kbd>Q</kbd> でロックオン。視点が相手に向いたままになります。</li>
+          <li>強化の3択は画面の左に出ます。<kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> で選んで <kbd>F</kbd> で決定。</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <div class="stripe" aria-hidden="true"></div>
+
+  <section id="stream">
+    <span class="kicker">Streamer mode</span>
+    <h2>配信者モード：コメントが試合に飛んでくる</h2>
+    <p>配信しながら遊ぶ人向けの仕組みです。YouTube か Twitch の配信につなぐと、視聴者がチャットに書いたコメントが、そのまま試合の妨害や応援になります。配信しない人は使わなくても普通に遊べます。</p>
+    <div class="two">
+      <div style="display:grid;gap:12px;align-content:start">
+        <h3>書き方は「だれに」＋「なにを」</h3>
+        <div class="chat" role="img" aria-label="コメントの例">
+          <div><span class="u">tanaka_55</span><span class="t">P1 メテオ</span><span class="r">→ P1 にメテオ</span></div>
+          <div><span class="u">yuzu_fan</span><span class="t">首位 氷</span><span class="r">→ 1位の人の足元が凍る</span></div>
+          <div><span class="u">mika</span><span class="t">P3 バリア</span><span class="r">→ P3 を守る</span></div>
+          <div><span class="u">kuro</span><span class="t">停電</span><span class="r">→ 場全体が暗くなる</span></div>
+        </div>
+        <ul class="list">
+          <li>だれに：<span class="mono">P1〜</span>、頭の上のアルファベット、<span class="mono">首位</span>、<span class="mono">ラスト</span>、<span class="mono">ランダム</span> など。</li>
+          <li>なにを：日本語・ひらがな・英語どれでも通じます（例：「メテオ」「いんせき」「meteor」）。</li>
+          <li>同じ妨害を何人もが続けて書くと「チャットの総意」として強い版が発動します。</li>
+          <li>荒れすぎないように、妨害ごと・視聴者ごとの待ち時間や、1ラウンドの回数の上限があります。配信者がその場で止めることもできます。</li>
+        </ul>
+      </div>
+      <figure>
+        <img src="img/meteor.jpg" width="1280" height="720" alt="メテオの妨害。空から大きな火の玉が落ちてきて、上に『メテオ接近！田中さんのコメント』の帯が出ている">
+        <figcaption>コメントで呼ばれたメテオ。だれのコメントかも画面に出ます。</figcaption>
+      </figure>
+    </div>
+    <h3>飛んでくるもの（一部）</h3>
+    <div class="haz">
+      <div><b>軽い妨害</b><span>落石・突風・ガンメン（画面におもちゃの顔）</span></div>
+      <div><b>中くらいの妨害</b><span>爆弾・氷結・粘着・磁力・EMP・衝撃波・ハッキング・巨大化・ミニ化</span></div>
+      <div><b>重い妨害</b><span>メテオ・援軍（敵が増える）</span></div>
+      <div class="stage"><b>場全体</b><span>停電・ちゃぶ台返し（地震）・ギミック暴走</span></div>
+      <div class="help"><b>応援</b><span>バリア・修理・補給</span></div>
+    </div>
+    <div class="two">
+      <figure>
+        <img src="img/stream_giant.jpg" width="1280" height="720" alt="遠征中の配信画面。コメント欄と妨害の投票が並び、『hank ▶ P1 に巨大化！』の知らせが出ている">
+        <figcaption>遠征を配信している所。コメントでキャラが巨大化させられています。</figcaption>
+      </figure>
+      <div style="display:grid;gap:10px;align-content:start">
+        <h3>配信者が選べること</h3>
+        <ul class="list">
+          <li><b>すぐ発動</b>か、一定時間コメントを集めて一番多かった妨害だけ通す<b>投票</b>か。</li>
+          <li>コメントが盛り上がるほど重い妨害が解禁される「熱気」のゲージ。</li>
+          <li>応援のコメントがたまると、自動でバリアが張られる「応援ゲージ」。</li>
+          <li>配信していなくても、練習用の「仮想コメント」（多い・普通・少ない）で雰囲気を試せます。</li>
+        </ul>
+        <p class="note">YouTube・Twitch へのつなぎ方は、ゲームの中の案内ページで説明しています。</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="stripe" aria-hidden="true"></div>
+
+  <section id="cast">
+    <span class="kicker">Cast</span>
+    <h2>出場者たち</h2>
+    <p>12人から選んで出撃します。全員、体の一部を機械に替えた「改造済み」の回収屋です。<span class="wip">工事中</span> キャラごとの得意な武器・必殺技・パッシブは作っている途中です。</p>
+    <div class="scroller" tabindex="0" aria-label="12人の設定画（横にスクロールできます）">
+      <img src="img/roster.jpg" width="1800" height="276" alt="12人の設定画を横一列に並べたもの。左からリン、ルル、ネム、スミレ、チカ、レイカ、ライガ、シオン、イワオ、ゴウ、ユズ、カナタ">
+    </div>
+    <dl class="cast">
+      <div class="main"><dt>リン<small>17歳くらい</small></dt><dd>熱血の主人公。改造費の借金を返して、もう一度自分の足で大会に出たい。</dd></div>
+      <div><dt>ルル<small>16歳くらい</small></dt><dd>新人アイドル。会社の配信で人気を取って、本物のデビューを狙う。</dd></div>
+      <div class="main"><dt>ネム<small>18歳くらい</small></dt><dd>毒舌のゲーマー。会社は大嫌いだけど給料が良いので割り切っている。</dd></div>
+      <div><dt>スミレ<small>19歳くらい</small></dt><dd>天然のお嬢様。おっとりした丁寧語なのに、戦いでは容赦がない。</dd></div>
+      <div><dt>チカ<small>16歳くらい</small></dt><dd>発明好きのメカオタク。会社に買い叩かれた実家の町工場を取り戻したい。</dd></div>
+      <div><dt>レイカ<small>27歳くらい</small></dt><dd>頼れる姐御。暴走の日に区域で消えた元の仲間を探している。</dd></div>
+      <div><dt>ライガ<small>17歳くらい</small></dt><dd>熱血のライバル。回収の成績で1位になってスポンサーを取りたい。</dd></div>
+      <div class="main"><dt>シオン<small>19歳くらい</small></dt><dd>クールな天才。暴走の原因に、自分がいた研究所が関わっていると疑っている。</dd></div>
+      <div><dt>イワオ<small>44歳くらい</small></dt><dd>番組の最古参。区域になった港は元の職場。若手の借金の相談に乗る。</dd></div>
+      <div><dt>ゴウ<small>30歳くらい</small></dt><dd>寡黙な職人。家族への仕送りのため、黙って一番重い物を運ぶ。</dd></div>
+      <div><dt>ユズ<small>16歳くらい</small></dt><dd>天然のマスコット。契約書を読まずにサインして、借金にまだ気付いていない。</dd></div>
+      <div class="main"><dt>カナタ<small>24歳くらい</small></dt><dd>おしゃべり実況役。自分のチャンネルの数字のために、会社の配信に便乗している。</dd></div>
+    </dl>
+    <div class="two">
+      <figure>
+        <img src="img/garage.jpg" width="1280" height="720" alt="ガレージ画面。中央にリン、左にキャラの切り替え、右に装備の一覧と性能のグラフ">
+        <figcaption>ガレージ。キャラを選び、腕・背中・脚とコアを付けて性能を見比べます。</figcaption>
+      </figure>
+      <div style="display:grid;gap:10px;align-content:start">
+        <h3>ガレージでできること</h3>
+        <ul class="list">
+          <li>キャラを選ぶ。HP・エネルギー・素早さがキャラごとにちがう。</li>
+          <li>右腕・左腕・背中・脚の部品を選ぶ。脚でエネルギーと速さが変わる。</li>
+          <li>遠征で持ち帰った「コア」を付ける。見た目は変わらないが、得意な戦い方や必殺技を強くできる。</li>
+          <li>練習場で試し撃ち。</li>
+        </ul>
+        <p class="note"><span class="wip">工事中</span> 部品の数・コアの効果・お店（ゲーム内のお金で買う仕組み）は調整中です。</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="stripe" aria-hidden="true"></div>
+
+  <section id="online">
+    <span class="kicker">Play together</span>
+    <h2>友だちと遊ぶ</h2>
+    <p>今は、1人が「ホスト」になって部屋を立て、ほかの人がホストの IP アドレスを入れて参加する形です。</p>
+    <ol class="list">
+      <li>ホストの人：タイトルの「オンライン」から部屋を立てる。</li>
+      <li>参加する人：「オンライン」でホストの IP アドレスを入れて参加する。</li>
+      <li>同じ家（同じネットワーク）なら、そのままつながります。</li>
+    </ol>
+    <p class="note">離れた場所の友だちと遊ぶ時は、今は <b>Tailscale</b>（無料の仮想ネットワーク）を全員が入れて、同じグループに入ってから、ホストの Tailscale のアドレスでつなぐ方法を試しています。<span class="wip">工事中</span> Steam のフレンド招待やマッチングは、まだありません。</p>
+    <p>人数が足りない時は Bot が入ります。ソロで遠征やアリーナに出ることもできます。</p>
+  </section>
+
+  <div class="stripe" aria-hidden="true"></div>
+
+  <section id="wip">
+    <span class="kicker">Under construction</span>
+    <h2>まだ工事中のところ</h2>
+    <p>開発中のゲームなので、遊んでいると変わっている所や、仮のままの所があります。今わかっているものをまとめました。</p>
+    <ul class="wiplist">
+      <li><span class="wip">工事中</span><b>見た目の差し替え</b><span>ロボットから人型のキャラへ差し替えている途中です。武器・背中・靴の3Dモデルを順に組み込んでいて、古いロボの見た目が残る場面があります。</span></li>
+      <li><span class="wip">工事中</span><b>キャラの個性</b><span>得意・不得意な武器、必殺技、パッシブは段階的に作っています。今は一部のキャラだけ動きます。</span></li>
+      <li><span class="wip">工事中</span><b>コアとお店</b><span>持ち帰るコアの効果、ゲーム内のお金で買う仕組み、くじ引きは調整中です。</span></li>
+      <li><span class="wip">工事中</span><b>オンライン</b><span>IP アドレスで直接つなぐ形だけです。Steam での招待・マッチングはこれからです。</span></li>
+      <li><span class="wip">工事中</span><b>ボスの見た目</b><span>レイドや夜のボスの姿は、差し替えの途中です。</span></li>
+      <li><span class="wip">工事中</span><b>お話・会話</b><span>世界観とキャラの設定はありますが、ゲームの中で語るお話や会話はまだありません。</span></li>
+      <li><span class="wip">工事中</span><b>音と画面の文字</b><span>効果音・音楽・画面の文字の大きさや太さは調整中です。</span></li>
+      <li><span class="wip">工事中</span><b>野戦演習</b><span>設定画面に出ることがある「野戦演習」は試作のモードです。</span></li>
+      <li><span class="wip">工事中</span><b>名前</b><span>「ChatArena」は仮の名前です。</span></li>
+    </ul>
+  </section>
+
+  <footer>
+    <span>2026年10月23日の開発版をもとに書いています。数字や操作は今後変わることがあります。</span>
+    <span>画像はゲーム画面と開発中の設定画です。キャラクターの設定画と3Dモデルは、画像生成AIと3D生成AIで作った下絵をもとにしています。</span>
+  </footer>
+</div>
+
+</body></html>
